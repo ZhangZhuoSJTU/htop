@@ -1,6 +1,9 @@
-# Course-side exclusions (macOS gold run). htop's process columns are defined per
-# platform: the Linux layer (linux/LinuxProcess.c) exposes CGROUP, CONTAINER,
-# AUTOGROUP_*, IO_*/RBYTES/WBYTES/RCHAR/WCHAR/SYSCR/SYSCW, OOM, SECATTR, CTXT,
+# Course-side exclusions (macOS gold run). Every group below states why it is
+# excluded; all of these tests pass unchanged inside the benchmark's Linux containers.
+
+# htop's process columns are defined per platform: the Linux layer
+# (linux/LinuxProcess.c) exposes CGROUP, CONTAINER, AUTOGROUP_*,
+# IO_*/RBYTES/WBYTES/RCHAR/WCHAR/SYSCR/SYSCW, OOM, SECATTR, CTXT,
 # M_PSS/M_PSSWP/M_SWAP/M_PRIV/M_SHARE/M_TRS/M_DRS/M_LRS, UTIME/STIME/CUTIME/CSTIME,
 # CMINFLT/CMAJFLT, COMM, SCHEDULERPOLICY, IO_PRIORITY; the darwin layer does not,
 # so `htop -s <KEY>` exits 1 with 'Error: invalid column "<KEY>"'. These sort-key
@@ -81,3 +84,17 @@
 32e3f2bdc5b7/eval.tests.test_process_coverage.test_trs_drs_lrs_columns
 32e3f2bdc5b7/eval.tests.test_ultra_intensive.test_ultra_run_100_iterations
 32e3f2bdc5b7/eval.tests.test_ultra_intensive.test_ultra_run_all_sort_long
+
+# These five tests pass only if the string "root", "bash" or "sleep" happens to
+# appear in a 24x80 batch render of htop (`-n 1..5`, no -u/-p filter), i.e. only
+# when a root-owned process, or one with "bash"/"sleep" in its command line, ranks
+# among the ~17 visible rows sorted by CPU%. That is a property of what the host
+# is running at that instant, not of the binary: on a macOS desktop each of them
+# passed in only some of ten back-to-back runs. The other tests in the suite that
+# look for "root" fall back to a string that is always rendered (the PID header,
+# a digit) or filter with `-u root` / `-p <pid>`, so they are kept.
+08291a021ea9/eval.tests.test_delay_modes.test_delay_multiple_iterations
+08291a021ea9/eval.tests.test_delay_modes.test_delay_very_small
+08291a021ea9/eval.tests.test_environment_vars.test_term_linux
+08291a021ea9/eval.tests.test_highlight_modes.test_highlight_changes_short
+08291a021ea9/eval.tests.test_meter_modes.test_all_display_flags
