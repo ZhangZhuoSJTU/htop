@@ -41,12 +41,6 @@ static const char* const ColorSchemeNames[] = {
    NULL
 };
 
-static void ColorsPanel_delete(Object* object) {
-   ColorsPanel* this = (ColorsPanel*) object;
-   Panel_done(&this->super);
-   free(this);
-}
-
 static HandlerResult ColorsPanel_eventHandler(Panel* super, int ch) {
    ColorsPanel* this = (ColorsPanel*) super;
 
@@ -81,13 +75,11 @@ static HandlerResult ColorsPanel_eventHandler(Panel* super, int ch) {
    return result;
 }
 
-const PanelClass ColorsPanel_class = {
-   .super = {
-      .extends = Class(Panel),
-      .delete = ColorsPanel_delete
-   },
-   .eventHandler = ColorsPanel_eventHandler
-};
+static void ColorsPanel_delete(Object* object) {
+   ColorsPanel* this = (ColorsPanel*) object;
+   Panel_done(&this->super);
+   free(this);
+}
 
 ColorsPanel* ColorsPanel_new(Settings* settings) {
    ColorsPanel* this = AllocThis(ColorsPanel);
@@ -107,3 +99,11 @@ ColorsPanel* ColorsPanel_new(Settings* settings) {
    CheckItem_set((CheckItem*)Panel_get(super, (int)CRT_colorScheme), true);
    return this;
 }
+
+const PanelClass ColorsPanel_class = {
+   .super = {
+      .extends = Class(Panel),
+      .delete = ColorsPanel_delete
+   },
+   .eventHandler = ColorsPanel_eventHandler
+};

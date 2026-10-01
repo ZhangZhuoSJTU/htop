@@ -34,13 +34,14 @@ const MeterClass ClockMeter_class = {
       .extends = Class(Meter),
       .delete = Meter_delete
    },
+   .supportedModes = (1 << TEXT_METERMODE) | (1 << LED_METERMODE),
    .updateValues = ClockMeter_updateValues,
    .defaultMode = TEXT_METERMODE,
-   .supportedModes = (1 << TEXT_METERMODE) | (1 << LED_METERMODE),
+   .name = "Clock",
+   .uiName = "Clock",
    .maxItems = 0,
    .total = 0.0,
    .attributes = ClockMeter_attributes,
-   .name = "Clock",
-   .uiName = "Clock",
+   
    .caption = "Time: ",
 };

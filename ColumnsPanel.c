@@ -27,12 +27,6 @@ in the source distribution for its full text.
 
 static const char* const ColumnsFunctions[] = {"      ", "      ", "      ", "      ", "      ", "      ", "MoveUp", "MoveDn", "Remove", "Done  ", NULL};
 
-static void ColumnsPanel_delete(Object* object) {
-   ColumnsPanel* this = (ColumnsPanel*) object;
-   Panel_done(&this->super);
-   free(this);
-}
-
 static HandlerResult ColumnsPanel_eventHandler(Panel* super, int ch) {
    ColumnsPanel* const this = (ColumnsPanel*) super;
 
@@ -98,6 +92,12 @@ static HandlerResult ColumnsPanel_eventHandler(Panel* super, int ch) {
    return result;
 }
 
+static void ColumnsPanel_delete(Object* object) {
+   ColumnsPanel* this = (ColumnsPanel*) object;
+   Panel_done(&this->super);
+   free(this);
+}
+
 const PanelClass ColumnsPanel_class = {
    .super = {
       .extends = Class(Panel),
@@ -125,14 +125,6 @@ static void ColumnsPanel_add(Panel* super, unsigned int key, Hashtable* columns)
    Panel_add(super, (Object*) ListItem_new(name, key));
 }
 
-void ColumnsPanel_fill(ColumnsPanel* this, ScreenSettings* ss, Hashtable* columns) {
-   Panel* super = &this->super;
-   Panel_prune(super);
-   for (const RowField* fields = ss->fields; *fields; fields++)
-      ColumnsPanel_add(super, *fields, columns);
-   this->ss = ss;
-}
-
 ColumnsPanel* ColumnsPanel_new(ScreenSettings* ss, Hashtable* columns, bool* changed) {
    ColumnsPanel* this = AllocThis(ColumnsPanel);
    Panel* super = &this->super;
@@ -148,6 +140,14 @@ ColumnsPanel* ColumnsPanel_new(ScreenSettings* ss, Hashtable* columns, bool* cha
    ColumnsPanel_fill(this, ss, columns);
 
    return this;
+}
+
+void ColumnsPanel_fill(ColumnsPanel* this, ScreenSettings* ss, Hashtable* columns) {
+   Panel* super = &this->super;
+   Panel_prune(super);
+   for (const RowField* fields = ss->fields; *fields; fields++)
+      ColumnsPanel_add(super, *fields, columns);
+   this->ss = ss;
 }
 
 void ColumnsPanel_update(Panel* super) {
