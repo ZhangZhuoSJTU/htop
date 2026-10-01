@@ -54,72 +54,89 @@ static void printHelpFlag(const char* name) {
    printf("%s " VERSION "\n"
           COPYRIGHT "\n"
           "Released under the GNU GPLv2+.\n\n"
-          "-C --no-color                   Use a monochrome color scheme\n"
           "-d --delay=DELAY                Set the delay between updates, in tenths of seconds\n"
-          "-F --filter=FILTER              Show only the commands matching the given filter\n"
-          "   --no-function-bar             Hide the function bar\n"
           "-h --help                       Print this help screen\n"
+          "   --no-function-bar             Hide the fucntion bar\n"
+          "-F --filter=FILTER               Show only the commands matching the given filter\n"
+          "-C --no-color                    Use a monochrome color scheme\n"
           "-H --highlight-changes[=DELAY]  Highlight new and old processes\n", name);
-#ifdef HAVE_GETMOUSE
-   printf("-M --no-mouse                   Disable the mouse\n");
+
+#ifdef HAVE_GETMOUSE 
+   printf("-M --no-mouse                   Disalbe the mouse\n");
 #endif
    printf("   --no-meters                  Hide meters\n"
-          "-n --max-iterations=NUMBER      Exit htop after NUMBER iterations/frame updates\n"
-          "-p --pid=PID[,PID,PID...]       Show only the given PIDs\n"
           "   --readonly                   Disable all system and process changing features\n"
           "-s --sort-key=COLUMN            Sort by COLUMN in list view (try --sort-key=help for a list)\n"
           "-t --tree                       Show the tree view (can be combined with -s)\n"
           "-u --user[=USERNAME]            Show only processes for a given user (or $USER)\n"
           "-U --no-unicode                 Do not use unicode but plain ASCII\n"
-          "-V --version                    Print version info\n");
+          "-V --version                    Print version info\n"
+          "-n --max-iterations=NUMBER      Exit htop after NUMBER iterations/frame updates\n"
+          "-p --pid=PID[,PID,PID...]       Show only the given PIDs\n"
+          );
    Platform_longOptionsUsage(name);
    printf("\n"
-          "Press F1 inside %s for online help.\n"
-          "See 'man %s' for more information.\n", name, name);
+          "See 'man %s' for more information.\n""Press F1 inside %s for online help.\n", name, name);
 }
 
-// ----------------------------------------
+static void Program_processError(const char* input) {
+    char errorMessage[10];
+    strcpy(errorMessage, input);
+    // add the key word Aborted as a variable under commandline settings or somehwere else where it makes sense. refer to it using a pointer or something so it looks more confusing.
+    // re arrange command line settings
+}
+
+ static CommandLineStatus reportParseError(const char* message, const char* value) {
+   fprintf(stderr, "Error: %s \"%s\".\n", message, value);
+   Program_processError(value);
+   return STATUS_ERROR_EXIT;
+}
+
 
 typedef struct CommandLineSettings_ {
+   int highlightDelaySecs;
+   bool treeView;
+   bool allowUnicode;
+   bool highlightChanges;
+   
+   bool readonly;
+   bool hideMeters;
+   bool hideFunctionBar;
+   #ifdef HAVE_GETMOUSE
+      bool enableMouse;
+   #endif
+   int delay;
    Hashtable* pidMatchList;
    char* commFilter;
    uid_t userId;
    int sortKey;
-   int delay;
+   
    int iterationsRemaining;
    bool useColors;
-#ifdef HAVE_GETMOUSE
-   bool enableMouse;
-#endif
-   bool treeView;
-   bool allowUnicode;
-   bool highlightChanges;
-   int highlightDelaySecs;
-   bool readonly;
-   bool hideMeters;
-   bool hideFunctionBar;
+
 } CommandLineSettings;
 
 static CommandLineStatus parseArguments(int argc, char** argv, CommandLineSettings* flags) {
 
    *flags = (CommandLineSettings) {
-      .pidMatchList = NULL,
-      .commFilter = NULL,
       .userId = (uid_t)-1, // -1 is guaranteed to be an invalid uid_t (see setreuid(2))
+      .commFilter = NULL,
+      .pidMatchList = NULL,
+      .delay = -1, 
+      .useColors = true, 
       .sortKey = 0,
-      .delay = -1,
-      .iterationsRemaining = -1,
-      .useColors = true,
-#ifdef HAVE_GETMOUSE
-      .enableMouse = true,
-#endif
-      .treeView = false,
+      
       .allowUnicode = true,
       .highlightChanges = false,
-      .highlightDelaySecs = -1,
+      .iterationsRemaining = -1,
+      .treeView = false,
       .readonly = false,
-      .hideMeters = false,
       .hideFunctionBar = false,
+      .highlightDelaySecs = -1,
+      .hideMeters = false,
+      #ifdef HAVE_GETMOUSE
+      .enableMouse = true,
+      #endif
    };
 
    {
@@ -156,6 +173,8 @@ static CommandLineStatus parseArguments(int argc, char** argv, CommandLineSettin
 
    int opt, opti = 0;
    /* Parse arguments */
+  
+
    while ((opt = getopt_long(argc, argv, "hVMCs:td:n:u::Up:F:H::", long_opts, &opti))) {
       if (opt == EOF)
          break;
@@ -199,8 +218,7 @@ static CommandLineStatus parseArguments(int argc, char** argv, CommandLineSettin
                if (flags->delay > 100)
                   flags->delay = 100;
             } else {
-               fprintf(stderr, "Error: invalid delay value \"%s\".\n", optarg);
-               return STATUS_ERROR_EXIT;
+               return reportParseError("invalid delay value", optarg);
             }
             break;
          case 'n':
@@ -210,8 +228,7 @@ static CommandLineStatus parseArguments(int argc, char** argv, CommandLineSettin
                   return STATUS_ERROR_EXIT;
                }
             } else {
-               fprintf(stderr, "Error: invalid maximum iteration count \"%s\".\n", optarg);
-               return STATUS_ERROR_EXIT;
+               return reportParseError("invalid maximum iteration count", optarg);
             }
             break;
          case 'u': {
@@ -228,8 +245,7 @@ static CommandLineStatus parseArguments(int argc, char** argv, CommandLineSettin
                /* using strtoll as strtoul negative value handling is not what we want */
                long long val = strtoll(username, &endptr, 10);
                if (*endptr != '\0' || username == endptr || val < 0 || val >= UINT_MAX) {
-                  fprintf(stderr, "Error: invalid user \"%s\".\n", username);
-                  return STATUS_ERROR_EXIT;
+                  return reportParseError("invalid user", username);
                }
                flags->userId = (uid_t)val;
             }
@@ -275,8 +291,7 @@ static CommandLineStatus parseArguments(int argc, char** argv, CommandLineSettin
          case 'F':
             assert(optarg);
             if (optarg[0] == '\0' || optarg[0] == '|') {
-               fprintf(stderr, "Error: invalid filter value \"%s\".\n", optarg);
-               return STATUS_ERROR_EXIT;
+               return reportParseError("invalid filter value", optarg);
             }
             free_and_xStrdup(&flags->commFilter, optarg);
             break;
@@ -294,8 +309,7 @@ static CommandLineStatus parseArguments(int argc, char** argv, CommandLineSettin
                   if (flags->highlightDelaySecs < 1)
                      flags->highlightDelaySecs = 1;
                } else {
-                  fprintf(stderr, "Error: invalid highlight delay value \"%s\".\n", delay);
-                  return STATUS_ERROR_EXIT;
+                  return reportParseError("invalid highlight delay value", delay);
                }
             }
             flags->highlightChanges = true;
