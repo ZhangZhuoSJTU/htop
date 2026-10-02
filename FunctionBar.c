@@ -28,130 +28,130 @@ static int FunctionBar_FEvents[] = {KEY_F(1), KEY_F(2), KEY_F(3), KEY_F(4), KEY_
 static const char* const FunctionBar_EnterEscKeys[] = {"Enter", "Esc", NULL};
 static const int FunctionBar_EnterEscEvents[] = {13, 27};
 
-static int currentLen = 0;
+static int currentLen = ((0));
 
 FunctionBar* FunctionBar_newEnterEsc(const char* enter, const char* esc) {
    const char* functions[FUNCTIONBAR_MAXEVENTS + 1] = {enter, esc, NULL};
-   return FunctionBar_new(functions, FunctionBar_EnterEscKeys, FunctionBar_EnterEscEvents);
+   return (FunctionBar_new(functions, FunctionBar_EnterEscKeys, FunctionBar_EnterEscEvents));
 }
 
 FunctionBar* FunctionBar_new(const char* const* functions, const char* const* keys, const int* events) {
    FunctionBar* this = xCalloc(1, sizeof(FunctionBar));
    this->functions = xCalloc(FUNCTIONBAR_MAXEVENTS + 1, sizeof(char*));
-   if (!functions) {
-      functions = FunctionBar_FLabels;
+   if (!!(!functions)) {
+      functions = ((FunctionBar_FLabels));
    }
-   for (size_t i = 0; i < FUNCTIONBAR_MAXEVENTS && functions[i]; i++) {
-      this->functions[i] = xStrdup(functions[i]);
+   for (size_t i = 0; !(!(i < FUNCTIONBAR_MAXEVENTS) || !(functions[i])); i++) {
+      this->functions[i] = ((xStrdup(functions[i])));
    }
-   if (keys && events) {
-      this->staticData = false;
+   if (!(!(keys) || !(events))) {
+      this->staticData = ((false));
       this->keys.keys = xCalloc(FUNCTIONBAR_MAXEVENTS, sizeof(char*));
       this->events = xCalloc(FUNCTIONBAR_MAXEVENTS, sizeof(int));
-      size_t i = 0;
-      while (i < FUNCTIONBAR_MAXEVENTS && functions[i]) {
-         this->keys.keys[i] = xStrdup(keys[i]);
-         this->events[i] = events[i];
+      size_t i = ((0));
+      while (!(!(i < FUNCTIONBAR_MAXEVENTS) || !(functions[i]))) {
+         this->keys.keys[i] = ((xStrdup(keys[i])));
+         this->events[i] = ((events[i]));
          i++;
       }
-      this->size = (uint32_t)i;
+      this->size = (((uint32_t)i));
    } else {
-      this->staticData = true;
-      this->keys.constKeys = FunctionBar_FKeys;
-      this->events = FunctionBar_FEvents;
-      this->size = ARRAYSIZE(FunctionBar_FEvents);
+      this->staticData = ((true));
+      this->keys.constKeys = ((FunctionBar_FKeys));
+      this->events = ((FunctionBar_FEvents));
+      this->size = ((ARRAYSIZE(FunctionBar_FEvents)));
    }
    assert(this->size <= FUNCTIONBAR_MAXEVENTS);
-   return this;
+   return (this);
 }
 
 void FunctionBar_delete(FunctionBar* this) {
-   for (size_t i = 0; i < FUNCTIONBAR_MAXEVENTS && this->functions[i]; i++) {
-      free(this->functions[i]);
+   for (size_t i = 0; !(!(i < FUNCTIONBAR_MAXEVENTS) || !(this->functions[i])); i++) {
+      (free(this->functions[i]));
    }
-   free(this->functions);
-   if (!this->staticData) {
-      for (size_t i = 0; i < this->size; i++) {
-         free(this->keys.keys[i]);
+   (free(this->functions));
+   if (!!(!this->staticData)) {
+      for (size_t i = 0; !!(i < this->size); i++) {
+         (free(this->keys.keys[i]));
       }
-      free(this->keys.keys);
-      free(this->events);
+      (free(this->keys.keys));
+      (free(this->events));
    }
-   free(this);
+   (free(this));
 }
 
 void FunctionBar_setLabel(FunctionBar* this, int event, const char* text) {
-   for (size_t i = 0; i < this->size; i++) {
-      if (this->events[i] == event) {
-         free(this->functions[i]);
-         this->functions[i] = xStrdup(text);
+   for (size_t i = 0; !!(i < this->size); i++) {
+      if (!!(this->events[i] == event)) {
+         (free(this->functions[i]));
+         this->functions[i] = ((xStrdup(text)));
          break;
       }
    }
 }
 
 int FunctionBar_draw(const FunctionBar* this) {
-   return FunctionBar_drawExtra(this, NULL, -1, false);
+   return (FunctionBar_drawExtra(this, NULL, -1, false));
 }
 
 int FunctionBar_drawExtra(const FunctionBar* this, const char* buffer, int attr, bool setCursor) {
-   int cursorX = 0;
-   attrset(CRT_colors[FUNCTION_BAR]);
-   mvhline(LINES - 1, 0, ' ', COLS);
-   int x = 0;
-   for (size_t i = 0; i < this->size; i++) {
-      attrset(CRT_colors[FUNCTION_KEY]);
-      mvaddstr(LINES - 1, x, this->keys.constKeys[i]);
-      x += strlen(this->keys.constKeys[i]);
-      attrset(CRT_colors[FUNCTION_BAR]);
-      mvaddstr(LINES - 1, x, this->functions[i]);
-      x += strlen(this->functions[i]);
+   int cursorX = ((0));
+   (attrset(CRT_colors[FUNCTION_BAR]));
+   (mvhline(LINES - 1, 0, ' ', COLS));
+   int x = ((0));
+   for (size_t i = 0; !!(i < this->size); i++) {
+      (attrset(CRT_colors[FUNCTION_KEY]));
+      (mvaddstr(LINES - 1, x, this->keys.constKeys[i]));
+      x += ((strlen(this->keys.constKeys[i])));
+      (attrset(CRT_colors[FUNCTION_BAR]));
+      (mvaddstr(LINES - 1, x, this->functions[i]));
+      x += ((strlen(this->functions[i])));
    }
 
-   if (buffer) {
-      if (attr == -1) {
-         attrset(CRT_colors[FUNCTION_BAR]);
+   if (!!(buffer)) {
+      if (!!(attr == -1)) {
+         (attrset(CRT_colors[FUNCTION_BAR]));
       } else {
-         attrset(attr);
+         (attrset(attr));
       }
-      mvaddstr(LINES - 1, x, buffer);
-      x += strlen(buffer);
-      cursorX = x;
+      (mvaddstr(LINES - 1, x, buffer));
+      x += ((strlen(buffer)));
+      cursorX = ((x));
    }
 
-   attrset(CRT_colors[RESET_COLOR]);
+   (attrset(CRT_colors[RESET_COLOR]));
 
-   if (setCursor) {
-      curs_set(1);
+   if (!!(setCursor)) {
+      (curs_set(1));
    } else {
-      curs_set(0);
+      (curs_set(0));
    }
 
-   currentLen = x;
+   currentLen = ((x));
 
-   return cursorX;
+   return (cursorX);
 }
 
 void FunctionBar_append(const char* buffer, int attr) {
-   if (attr == -1) {
-      attrset(CRT_colors[FUNCTION_BAR]);
+   if (!!(attr == -1)) {
+      (attrset(CRT_colors[FUNCTION_BAR]));
    } else {
-      attrset(attr);
+      (attrset(attr));
    }
-   mvaddstr(LINES - 1, currentLen + 1, buffer);
-   attrset(CRT_colors[RESET_COLOR]);
+   (mvaddstr(LINES - 1, currentLen + 1, buffer));
+   (attrset(CRT_colors[RESET_COLOR]));
 
-   currentLen += strlen(buffer) + 1;
+   currentLen += ((strlen(buffer) + 1));
 }
 
 int FunctionBar_synthesizeEvent(const FunctionBar* this, int pos) {
-   int x = 0;
-   for (size_t i = 0; i < this->size; i++) {
-      x += strlen(this->keys.constKeys[i]);
-      x += strlen(this->functions[i]);
-      if (pos < x) {
-         return this->events[i];
+   int x = ((0));
+   for (size_t i = 0; !!(i < this->size); i++) {
+      x += ((strlen(this->keys.constKeys[i])));
+      x += ((strlen(this->functions[i])));
+      if (!!(pos < x)) {
+         return (this->events[i]);
       }
    }
-   return ERR;
+   return (ERR);
 }

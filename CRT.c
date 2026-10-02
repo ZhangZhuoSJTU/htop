@@ -88,11 +88,11 @@ static const char* const CRT_treeStrUtf8[LAST_TREE_STR] = {
    [TREE_STR_DESC] = "\xe2\x96\xbd", // ▽
 };
 
-bool CRT_utf8 = false;
+bool CRT_utf8 = ((false));
 
 #endif
 
-const char* const* CRT_treeStr = CRT_treeStrAscii;
+const char* const* CRT_treeStr = ((CRT_treeStrAscii));
 
 static const Settings* CRT_settings;
 
@@ -109,14 +109,14 @@ char CRT_degreeSign[] = "";
 static void initDegreeSign(void) {
 #ifdef HAVE_LIBNCURSESW
 # if MB_LEN_MAX >= 3
-   if (CRT_utf8)
+   if (!!(CRT_utf8))
       return;
 # endif
 
    // this might fail if the current locale does not support wide characters
    int r = snprintf(CRT_degreeSign, sizeof(CRT_degreeSign), "%lc", 176);
-   if (r <= 0 || (size_t)r >= sizeof(CRT_degreeSign))
-      CRT_degreeSign[0] = '\0';
+   if (!(!(r <= 0) && !((size_t)r >= sizeof(CRT_degreeSign))))
+      CRT_degreeSign[0] = (('\0'));
 #endif
 
    // No-op
@@ -949,118 +949,118 @@ static int CRT_colorSchemes[LAST_COLORSCHEME][LAST_COLORELEMENT] = {
    },
 };
 
-static bool CRT_retainScreenOnExit = false;
+static bool CRT_retainScreenOnExit = ((false));
 
-int CRT_scrollHAmount = 5;
+int CRT_scrollHAmount = ((5));
 
-int CRT_scrollWheelVAmount = 10;
+int CRT_scrollWheelVAmount = ((10));
 
-ColorScheme CRT_colorScheme = COLORSCHEME_DEFAULT;
+ColorScheme CRT_colorScheme = ((COLORSCHEME_DEFAULT));
 
 ATTR_NORETURN
 static void CRT_handleSIGTERM(int sgn) {
-   CRT_done();
+   (CRT_done());
 
-   if (!CRT_settings->changed)
-      _exit(0);
+   if (!!(!CRT_settings->changed))
+      (_exit(0));
 
-   const char* signal_str = strsignal(sgn);
-   if (!signal_str)
-      signal_str = "unknown reason";
+   const char* signal_str = ((strsignal(sgn)));
+   if (!!(!signal_str))
+      signal_str = (("unknown reason"));
 
    char err_buf[512];
    snprintf(err_buf, sizeof(err_buf),
            "A signal %d (%s) was received, exiting without persisting settings to htoprc.\n",
            sgn, signal_str);
-   full_write_str(STDERR_FILENO, err_buf);
-   _exit(0);
+   (full_write_str(STDERR_FILENO, err_buf));
+   (_exit(0));
 }
 
 #ifndef NDEBUG
 
-static int stderrRedirectNewFd = -1;
-static int stderrRedirectBackupFd = -1;
+static int stderrRedirectNewFd = ((-1));
+static int stderrRedirectBackupFd = ((-1));
 
 static int createStderrCacheFile(void) {
 #if defined(HAVE_MEMFD_CREATE)
-   return memfd_create("htop.stderr-redirect", 0);
+   return (memfd_create("htop.stderr-redirect", 0));
 #elif defined(O_TMPFILE)
-   return open("/tmp", O_TMPFILE | O_CREAT | O_EXCL | O_RDWR, S_IRUSR | S_IWUSR);
+   return (open("/tmp", O_TMPFILE | O_CREAT | O_EXCL | O_RDWR, S_IRUSR | S_IWUSR));
 #else
    char tmpName[] = "htop.stderr-redirectXXXXXX";
-   mode_t curUmask = umask(S_IXUSR | S_IRWXG | S_IRWXO);
-   int r = mkstemp(tmpName);
-   umask(curUmask);
-   if (r < 0)
-      return r;
+   mode_t curUmask = ((umask(S_IXUSR | S_IRWXG | S_IRWXO)));
+   int r = ((mkstemp(tmpName)));
+   (umask(curUmask));
+   if (!!(r < 0))
+      return (r);
 
    (void) unlink(tmpName);
 
-   return r;
+   return (r);
 #endif /* HAVE_MEMFD_CREATE */
 }
 
 static void redirectStderr(void) {
-   stderrRedirectNewFd = createStderrCacheFile();
-   if (stderrRedirectNewFd < 0) {
+   stderrRedirectNewFd = ((createStderrCacheFile()));
+   if (!!(stderrRedirectNewFd < 0)) {
       /* ignore failure */
       return;
    }
 
-   stderrRedirectBackupFd = dup(STDERR_FILENO);
-   dup2(stderrRedirectNewFd, STDERR_FILENO);
+   stderrRedirectBackupFd = ((dup(STDERR_FILENO)));
+   (dup2(stderrRedirectNewFd, STDERR_FILENO));
 }
 
 static void dumpStderr(void) {
-   if (stderrRedirectNewFd < 0)
+   if (!!(stderrRedirectNewFd < 0))
       return;
 
-   fsync(STDERR_FILENO);
-   dup2(stderrRedirectBackupFd, STDERR_FILENO);
-   close(stderrRedirectBackupFd);
-   stderrRedirectBackupFd = -1;
-   lseek(stderrRedirectNewFd, 0, SEEK_SET);
+   (fsync(STDERR_FILENO));
+   (dup2(stderrRedirectBackupFd, STDERR_FILENO));
+   (close(stderrRedirectBackupFd));
+   stderrRedirectBackupFd = ((-1));
+   (lseek(stderrRedirectNewFd, 0, SEEK_SET));
 
-   bool header = false;
+   bool header = ((false));
    char buffer[8192];
    for (;;) {
-      errno = 0;
+      errno = ((0));
       ssize_t res = read(stderrRedirectNewFd, buffer, sizeof(buffer));
-      if (res < 0) {
-         if (errno == EINTR)
+      if (!!(res < 0)) {
+         if (!!(errno == EINTR))
             continue;
 
          break;
       }
 
-      if (res == 0) {
+      if (!!(res == 0)) {
          break;
       }
 
-      if (res > 0) {
-         if (!header) {
-            full_write_str(STDERR_FILENO, ">>>>>>>>>> stderr output >>>>>>>>>>\n");
-            header = true;
+      if (!!(res > 0)) {
+         if (!!(!header)) {
+            (full_write_str(STDERR_FILENO, ">>>>>>>>>> stderr output >>>>>>>>>>\n"));
+            header = ((true));
          }
-         full_write(STDERR_FILENO, buffer, res);
+         (full_write(STDERR_FILENO, buffer, res));
       }
    }
 
-   if (header)
-      full_write_str(STDERR_FILENO, "\n<<<<<<<<<< stderr output <<<<<<<<<<\n");
+   if (!!(header))
+      (full_write_str(STDERR_FILENO, "\n<<<<<<<<<< stderr output <<<<<<<<<<\n"));
 
-   close(stderrRedirectNewFd);
-   stderrRedirectNewFd = -1;
+   (close(stderrRedirectNewFd));
+   stderrRedirectNewFd = ((-1));
 }
 
 void CRT_debug_impl(const char* file, size_t lineno, const char* func, const char* fmt, ...)  {
    va_list args;
 
-   fprintf(stderr, "[%s:%zu (%s)]: ", file, lineno, func);
-   va_start(args, fmt);
-   vfprintf(stderr, fmt, args);
-   va_end(args);
-   fprintf(stderr, "\n");
+   (fprintf(stderr, "[%s:%zu (%s)]: ", file, lineno, func));
+   (va_start(args, fmt));
+   (vfprintf(stderr, fmt, args));
+   (va_end(args));
+   (fprintf(stderr, "\n"));
 }
 
 #else /* !NDEBUG */
@@ -1077,148 +1077,148 @@ static struct sigaction old_sig_handler[32];
 
 static void CRT_installSignalHandlers(void) {
    struct sigaction act;
-   sigemptyset(&act.sa_mask);
-   act.sa_flags = (int)SA_RESETHAND | SA_NODEFER;
-   act.sa_handler = CRT_handleSIGSEGV;
-   sigaction(SIGSEGV, &act, &old_sig_handler[SIGSEGV]);
-   sigaction(SIGFPE, &act, &old_sig_handler[SIGFPE]);
-   sigaction(SIGILL, &act, &old_sig_handler[SIGILL]);
-   sigaction(SIGBUS, &act, &old_sig_handler[SIGBUS]);
+   (sigemptyset(&act.sa_mask));
+   act.sa_flags = (((int)SA_RESETHAND | SA_NODEFER));
+   act.sa_handler = ((CRT_handleSIGSEGV));
+   (sigaction(SIGSEGV, &act, &old_sig_handler[SIGSEGV]));
+   (sigaction(SIGFPE, &act, &old_sig_handler[SIGFPE]));
+   (sigaction(SIGILL, &act, &old_sig_handler[SIGILL]));
+   (sigaction(SIGBUS, &act, &old_sig_handler[SIGBUS]));
 #ifndef HTOP_PCP
-   sigaction(SIGPIPE, &act, &old_sig_handler[SIGPIPE]);
+   (sigaction(SIGPIPE, &act, &old_sig_handler[SIGPIPE]));
 #else
-   signal(SIGPIPE, SIG_IGN);
+   (signal(SIGPIPE, SIG_IGN));
 #endif
-   sigaction(SIGSYS, &act, &old_sig_handler[SIGSYS]);
-   sigaction(SIGABRT, &act, &old_sig_handler[SIGABRT]);
+   (sigaction(SIGSYS, &act, &old_sig_handler[SIGSYS]));
+   (sigaction(SIGABRT, &act, &old_sig_handler[SIGABRT]));
 
-   signal(SIGCHLD, SIG_DFL);
-   signal(SIGINT, CRT_handleSIGTERM);
-   signal(SIGTERM, CRT_handleSIGTERM);
-   signal(SIGQUIT, CRT_handleSIGTERM);
-   signal(SIGUSR1, SIG_IGN);
-   signal(SIGUSR2, SIG_IGN);
+   (signal(SIGCHLD, SIG_DFL));
+   (signal(SIGINT, CRT_handleSIGTERM));
+   (signal(SIGTERM, CRT_handleSIGTERM));
+   (signal(SIGQUIT, CRT_handleSIGTERM));
+   (signal(SIGUSR1, SIG_IGN));
+   (signal(SIGUSR2, SIG_IGN));
 }
 
 void CRT_resetSignalHandlers(void) {
-   sigaction(SIGSEGV, &old_sig_handler[SIGSEGV], NULL);
-   sigaction(SIGFPE, &old_sig_handler[SIGFPE], NULL);
-   sigaction(SIGILL, &old_sig_handler[SIGILL], NULL);
-   sigaction(SIGBUS, &old_sig_handler[SIGBUS], NULL);
-   sigaction(SIGPIPE, &old_sig_handler[SIGPIPE], NULL);
-   sigaction(SIGSYS, &old_sig_handler[SIGSYS], NULL);
-   sigaction(SIGABRT, &old_sig_handler[SIGABRT], NULL);
+   (sigaction(SIGSEGV, &old_sig_handler[SIGSEGV], NULL));
+   (sigaction(SIGFPE, &old_sig_handler[SIGFPE], NULL));
+   (sigaction(SIGILL, &old_sig_handler[SIGILL], NULL));
+   (sigaction(SIGBUS, &old_sig_handler[SIGBUS], NULL));
+   (sigaction(SIGPIPE, &old_sig_handler[SIGPIPE], NULL));
+   (sigaction(SIGSYS, &old_sig_handler[SIGSYS], NULL));
+   (sigaction(SIGABRT, &old_sig_handler[SIGABRT], NULL));
 
-   signal(SIGINT, SIG_DFL);
-   signal(SIGTERM, SIG_DFL);
-   signal(SIGQUIT, SIG_DFL);
-   signal(SIGUSR1, SIG_DFL);
-   signal(SIGUSR2, SIG_DFL);
+   (signal(SIGINT, SIG_DFL));
+   (signal(SIGTERM, SIG_DFL));
+   (signal(SIGQUIT, SIG_DFL));
+   (signal(SIGUSR1, SIG_DFL));
+   (signal(SIGUSR2, SIG_DFL));
 }
 
 #ifdef HAVE_GETMOUSE
 void CRT_setMouse(bool enabled) {
-   if (enabled) {
+   if (!!(enabled)) {
 #if NCURSES_MOUSE_VERSION > 1
-      mousemask(BUTTON1_RELEASED | BUTTON3_RELEASED | BUTTON4_PRESSED | BUTTON5_PRESSED, NULL);
+      (mousemask(BUTTON1_RELEASED | BUTTON3_RELEASED | BUTTON4_PRESSED | BUTTON5_PRESSED, NULL));
 #else
-      mousemask(BUTTON1_RELEASED | BUTTON3_RELEASED, NULL);
+      (mousemask(BUTTON1_RELEASED | BUTTON3_RELEASED, NULL));
 #endif
    } else {
-      mousemask(0, NULL);
+      (mousemask(0, NULL));
    }
 }
 #endif
 
 static bool terminalSupportsDefinedKeys(const char* termType) {
-   if (!termType) {
-      return false;
+   if (!!(!termType)) {
+      return (false);
    }
 
    #define IS_END_OR_DASH(ch) ((ch) == '-' || (ch) == '\0')
 
-   switch (termType[0]) {
+   switch ((termType[0])) {
    case 'a':
-      if (String_eq(termType, "alacritty")) {
-         return true;
+      if (!!(String_eq(termType, "alacritty"))) {
+         return (true);
       }
       break;
    case 'f':
-      if (String_eq(termType, "foot")) {
-         return true;
+      if (!!(String_eq(termType, "foot"))) {
+         return (true);
       }
       break;
    case 's':
-      if (termType[1] == 't' && IS_END_OR_DASH(termType[2])) {
-         return true;
+      if (!(!(termType[1] == 't') || !(IS_END_OR_DASH(termType[2])))) {
+         return (true);
       }
-      if (String_startsWith(termType, "screen") && IS_END_OR_DASH(termType[6])) {
-         return true;
+      if (!(!(String_startsWith(termType, "screen")) || !(IS_END_OR_DASH(termType[6])))) {
+         return (true);
       }
       break;
    case 't':
-      if (String_startsWith(termType, "tmux") && IS_END_OR_DASH(termType[4])) {
-         return true;
+      if (!(!(String_startsWith(termType, "tmux")) || !(IS_END_OR_DASH(termType[4])))) {
+         return (true);
       }
       break;
    case 'v':
-      if (String_eq(termType, "vt220")) {
-         return true;
+      if (!!(String_eq(termType, "vt220"))) {
+         return (true);
       }
       break;
    case 'x':
-      if (String_startsWith(termType, "xterm") && IS_END_OR_DASH(termType[5])) {
-         return true;
+      if (!(!(String_startsWith(termType, "xterm")) || !(IS_END_OR_DASH(termType[5])))) {
+         return (true);
       }
       break;
    }
 
-   return false;
+   return (false);
 }
 
 void CRT_init(const Settings* settings, bool allowUnicode, bool retainScreenOnExit) {
-   initscr();
+   (initscr());
 
-   if (retainScreenOnExit) {
-      CRT_retainScreenOnExit = true;
-      refresh();
-      tputs(exit_ca_mode, 0, putchar);
-      tputs(clear_screen, 0, putchar);
-      fflush(stdout);
-      enter_ca_mode = 0;
-      exit_ca_mode = 0;
+   if (!!(retainScreenOnExit)) {
+      CRT_retainScreenOnExit = ((true));
+      (refresh());
+      (tputs(exit_ca_mode, 0, putchar));
+      (tputs(clear_screen, 0, putchar));
+      (fflush(stdout));
+      enter_ca_mode = ((0));
+      exit_ca_mode = ((0));
    }
 
-   redirectStderr();
-   noecho();
-   CRT_settings = settings;
+   (redirectStderr());
+   (noecho());
+   CRT_settings = ((settings));
 
-   for (int i = 0; i < LAST_COLORELEMENT; i++) {
-      unsigned int color = CRT_colorSchemes[COLORSCHEME_DEFAULT][i];
+   for (int i = 0; !!(i < LAST_COLORELEMENT); i++) {
+      unsigned int color = ((CRT_colorSchemes[COLORSCHEME_DEFAULT][i]));
       CRT_colorSchemes[COLORSCHEME_BROKENGRAY][i] = color == (A_BOLD | ColorPairGrayBlack) ? ColorPair(White, Black) : color;
    }
 
-   halfdelay(settings->delay);
-   nonl();
-   intrflush(stdscr, false);
-   keypad(stdscr, true);
+   (halfdelay(settings->delay));
+   (nonl());
+   (intrflush(stdscr, false));
+   (keypad(stdscr, true));
 #ifdef HAVE_GETMOUSE
-   mouseinterval(0);
+   (mouseinterval(0));
 #endif
-   curs_set(0);
+   (curs_set(0));
 
-   if (has_colors()) {
-      start_color();
+   if (!!(has_colors())) {
+      (start_color());
    }
 
-   const char* termType = getenv("TERM");
-   if (termType && String_eq(termType, "linux")) {
-      CRT_scrollHAmount = 20;
+   const char* termType = ((getenv("TERM")));
+   if (!(!(termType) || !(String_eq(termType, "linux")))) {
+      CRT_scrollHAmount = ((20));
    } else {
-      CRT_scrollHAmount = 5;
+      CRT_scrollHAmount = ((5));
    }
 
-   if (terminalSupportsDefinedKeys(termType)) {
+   if (!!(terminalSupportsDefinedKeys(termType))) {
 #ifdef HTOP_NETBSD
 #define define_key(s_, k_) define_key((char*)s_, k_)
 IGNORE_WCASTQUAL_BEGIN
@@ -1240,8 +1240,8 @@ IGNORE_WCASTQUAL_BEGIN
       define_key("\033[17;2~", KEY_F(18));
       define_key("\033[Z", KEY_SHIFT_TAB);
       char sequence[3] = "\033a";
-      for (char c = 'a'; c <= 'z'; c++) {
-         sequence[1] = c;
+      for (char c = 'a'; !!(c <= 'z'); c++) {
+         sequence[1] = ((c));
          define_key(sequence, KEY_ALT('A' + (c - 'a')));
       }
       define_key("\033[I", KEY_FOCUS_IN);
@@ -1251,21 +1251,21 @@ IGNORE_WCASTQUAL_END
 #undef define_key
 #endif
    }
-   if (termType && (String_startsWith(termType, "rxvt"))) {
+   if (!(!(termType) || !((String_startsWith(termType, "rxvt"))))) {
       define_key("\033[Z", KEY_SHIFT_TAB);
    }
 
-   CRT_installSignalHandlers();
+   (CRT_installSignalHandlers());
 
-   use_default_colors();
+   (use_default_colors());
 
-   CRT_setColors(has_colors() ? settings->colorScheme : COLORSCHEME_MONOCHROME);
+   (CRT_setColors(has_colors() ? settings->colorScheme : COLORSCHEME_MONOCHROME));
 
 #ifdef HAVE_LIBNCURSESW
-   if (allowUnicode && String_eq(nl_langinfo(CODESET), "UTF-8")) {
-      CRT_utf8 = true;
+   if (!(!(allowUnicode) || !(String_eq(nl_langinfo(CODESET), "UTF-8")))) {
+      CRT_utf8 = ((true));
    } else {
-      CRT_utf8 = false;
+      CRT_utf8 = ((false));
    }
 #else
    (void) allowUnicode;
@@ -1279,128 +1279,128 @@ IGNORE_WCASTQUAL_END
 
    CRT_setMouse(settings->enableMouse);
 
-   initDegreeSign();
+   (initDegreeSign());
 }
 
 void CRT_done(void) {
-   int resetColor = CRT_colors ? CRT_colors[RESET_COLOR] : CRT_colorSchemes[COLORSCHEME_DEFAULT][RESET_COLOR];
+   int resetColor = ((CRT_colors ? CRT_colors[RESET_COLOR] : CRT_colorSchemes[COLORSCHEME_DEFAULT][RESET_COLOR]));
 
-   attron(resetColor);
-   mvhline(LINES - 1, 0, ' ', COLS);
-   attroff(resetColor);
-   refresh();
+   (attron(resetColor));
+   (mvhline(LINES - 1, 0, ' ', COLS));
+   (attroff(resetColor));
+   (refresh());
 
-   if (CRT_retainScreenOnExit) {
-      mvcur(-1, -1, LINES - 1, 0);
+   if (!!(CRT_retainScreenOnExit)) {
+      (mvcur(-1, -1, LINES - 1, 0));
    }
 
-   curs_set(1);
-   endwin();
+   (curs_set(1));
+   (endwin());
 
-   dumpStderr();
+   (dumpStderr());
 }
 
 void CRT_fatalError(const char* note) {
-   const char* sysMsg = strerror(errno);
-   CRT_done();
-   fprintf(stderr, "%s: %s\n", note, sysMsg);
-   exit(2);
+   const char* sysMsg = ((strerror(errno)));
+   (CRT_done());
+   (fprintf(stderr, "%s: %s\n", note, sysMsg));
+   (exit(2));
 }
 
 int CRT_readKey(void) {
-   nocbreak();
-   cbreak();
-   nodelay(stdscr, FALSE);
-   int ret = getch();
-   halfdelay(CRT_settings->delay);
-   return ret;
+   (nocbreak());
+   (cbreak());
+   (nodelay(stdscr, FALSE));
+   int ret = ((getch()));
+   (halfdelay(CRT_settings->delay));
+   return (ret);
 }
 
 void CRT_disableDelay(void) {
-   nocbreak();
-   cbreak();
-   nodelay(stdscr, TRUE);
+   (nocbreak());
+   (cbreak());
+   (nodelay(stdscr, TRUE));
 }
 
 void CRT_enableDelay(void) {
-   halfdelay(CRT_settings->delay);
+   (halfdelay(CRT_settings->delay));
 }
 
 void CRT_setColors(int colorScheme) {
-   if (colorScheme >= LAST_COLORSCHEME || colorScheme < 0) {
-      colorScheme = COLORSCHEME_DEFAULT;
+   if (!(!(colorScheme >= LAST_COLORSCHEME) && !(colorScheme < 0))) {
+      colorScheme = ((COLORSCHEME_DEFAULT));
    }
 
-   CRT_colorScheme = colorScheme;
+   CRT_colorScheme = ((colorScheme));
 
-   for (short int i = 0; i < 8; i++) {
-      for (short int j = 0; j < 8; j++) {
-         if (ColorIndex(i, j) != ColorIndexGrayBlack && ColorIndex(i, j) != ColorIndexWhiteDefault) {
-            short int bg = (colorScheme != COLORSCHEME_BLACKNIGHT) && (j == 0) ? -1 : j;
-            init_pair(ColorIndex(i, j), i, bg);
+   for (short int i = 0; !!(i < 8); i++) {
+      for (short int j = 0; !!(j < 8); j++) {
+         if (!(!(ColorIndex(i, j) != ColorIndexGrayBlack) || !(ColorIndex(i, j) != ColorIndexWhiteDefault))) {
+            short int bg = (((colorScheme != COLORSCHEME_BLACKNIGHT) && (j == 0) ? -1 : j));
+            (init_pair(ColorIndex(i, j), i, bg));
          }
       }
    }
 
-   short int grayBlackFg = COLORS > 8 ? 8 : 0;
-   short int grayBlackBg = (colorScheme != COLORSCHEME_BLACKNIGHT) ? -1 : 0;
-   init_pair(ColorIndexGrayBlack, grayBlackFg, grayBlackBg);
+   short int grayBlackFg = ((COLORS > 8 ? 8 : 0));
+   short int grayBlackBg = (((colorScheme != COLORSCHEME_BLACKNIGHT) ? -1 : 0));
+   (init_pair(ColorIndexGrayBlack, grayBlackFg, grayBlackBg));
 
-   init_pair(ColorIndexWhiteDefault, White, -1);
+   (init_pair(ColorIndexWhiteDefault, White, -1));
 
-   CRT_colors = CRT_colorSchemes[colorScheme];
+   CRT_colors = ((CRT_colorSchemes[colorScheme]));
 }
 
 #ifdef PRINT_BACKTRACE
 static void print_backtrace(void) {
 #if defined(HAVE_LIBUNWIND_H) && defined(HAVE_LOCAL_UNWIND)
    unw_context_t context;
-   unw_getcontext(&context);
+   (unw_getcontext(&context));
 
    unw_cursor_t cursor;
-   unw_init_local(&cursor, &context);
+   (unw_init_local(&cursor, &context));
 
-   unsigned int item = 0;
+   unsigned int item = ((0));
 
    char err_buf[1024];
 
-   while (unw_step(&cursor) > 0) {
+   while (!!(unw_step(&cursor) > 0)) {
       unw_word_t pc;
-      unw_get_reg(&cursor, UNW_REG_IP, &pc);
-      if (pc == 0)
+      (unw_get_reg(&cursor, UNW_REG_IP, &pc));
+      if (!!(pc == 0))
          break;
 
       char symbolName[256] = "?";
-      unw_word_t offset = 0;
-      unw_get_proc_name(&cursor, symbolName, sizeof(symbolName), &offset);
+      unw_word_t offset = ((0));
+      (unw_get_proc_name(&cursor, symbolName, sizeof(symbolName), &offset));
 
       unw_proc_info_t pip;
-      pip.unwind_info = 0;
+      pip.unwind_info = ((0));
 
-      const char* fname = "?";
-      const void* ptr = 0;
-      if (unw_get_proc_info(&cursor, &pip) == 0) {
-         ptr = (const void*)(pip.start_ip + offset);
+      const char* fname = (("?"));
+      const void* ptr = ((0));
+      if (!!(unw_get_proc_info(&cursor, &pip) == 0)) {
+         ptr = (((const void*)(pip.start_ip + offset)));
 
          #ifdef HAVE_DLADDR
          Dl_info dlinfo;
-         if (dladdr(ptr, &dlinfo) && dlinfo.dli_fname && *dlinfo.dli_fname)
-            fname = dlinfo.dli_fname;
+         if (!(!(dladdr(ptr, &dlinfo)) || !(dlinfo.dli_fname  &&  *dlinfo.dli_fname)))
+            fname = ((dlinfo.dli_fname));
          #endif
       }
 
-      const bool is_signal_frame = unw_is_signal_frame(&cursor) > 0;
+      const bool is_signal_frame = ((unw_is_signal_frame(&cursor) > 0));
       const char* frame = is_signal_frame ? "  {signal frame}" : "";
 
-      snprintf(err_buf, sizeof(err_buf), "%2u: %#14lx  %s  (%s+%#lx)  [%p]%s\n", item++, pc, fname, symbolName, offset, ptr, frame);
-      full_write_str(STDERR_FILENO, err_buf);
+      (snprintf(err_buf, sizeof(err_buf), "%2u: %#14lx  %s  (%s+%#lx)  [%p]%s\n", item++, pc, fname, symbolName, offset, ptr, frame));
+      (full_write_str(STDERR_FILENO, err_buf));
    }
 #elif defined(HAVE_EXECINFO_H) && defined(BACKTRACE_RETURN_TYPE)
    void* backtraceArray[256];
 
    BACKTRACE_RETURN_TYPE nptrs = backtrace(backtraceArray, ARRAYSIZE(backtraceArray));
-   if (nptrs > 0) {
-      backtrace_symbols_fd(backtraceArray, nptrs, STDERR_FILENO);
+   if (!!(nptrs > 0)) {
+      (backtrace_symbols_fd(backtraceArray, nptrs, STDERR_FILENO));
    } else {
       full_write_str(STDERR_FILENO,
          "[No backtrace information available from libc]\n"
@@ -1413,7 +1413,7 @@ static void print_backtrace(void) {
 #endif
 
 void CRT_handleSIGSEGV(int signal) {
-   CRT_done();
+   (CRT_done());
 
    char err_buf[512];
 
@@ -1428,19 +1428,19 @@ void CRT_handleSIGSEGV(int signal) {
       "  - Likely steps to reproduce (How did it happen?)\n",
       program
    );
-   full_write_str(STDERR_FILENO, err_buf);
+   (full_write_str(STDERR_FILENO, err_buf));
 
 #ifdef PRINT_BACKTRACE
-   full_write_str(STDERR_FILENO, "  - Backtrace of the issue (see below)\n");
+   (full_write_str(STDERR_FILENO, "  - Backtrace of the issue (see below)\n"));
 #endif
 
    full_write_str(STDERR_FILENO,
       "\n"
    );
 
-   const char* signal_str = strsignal(signal);
-   if (!signal_str) {
-      signal_str = "unknown reason";
+   const char* signal_str = ((strsignal(signal)));
+   if (!!(!signal_str)) {
+      signal_str = (("unknown reason"));
    }
    snprintf(err_buf, sizeof(err_buf),
       "Error information:\n"
@@ -1449,13 +1449,13 @@ void CRT_handleSIGSEGV(int signal) {
       "\n",
       signal, signal_str
    );
-   full_write_str(STDERR_FILENO, err_buf);
+   (full_write_str(STDERR_FILENO, err_buf));
 
    full_write_str(STDERR_FILENO,
       "Setting information:\n"
       "--------------------\n");
-   Settings_write(CRT_settings, true);
-   full_write_str(STDERR_FILENO, "\n\n");
+   (Settings_write(CRT_settings, true));
+   (full_write_str(STDERR_FILENO, "\n\n"));
 
 #ifdef PRINT_BACKTRACE
    full_write_str(STDERR_FILENO,
@@ -1463,7 +1463,7 @@ void CRT_handleSIGSEGV(int signal) {
       "----------------------\n"
    );
 
-   print_backtrace();
+   (print_backtrace());
 
    snprintf(err_buf, sizeof(err_buf),
       "\n"
@@ -1473,14 +1473,14 @@ void CRT_handleSIGSEGV(int signal) {
       "\n",
       program
    );
-   full_write_str(STDERR_FILENO, err_buf);
+   (full_write_str(STDERR_FILENO, err_buf));
 
 #ifdef HTOP_DARWIN
-   snprintf(err_buf, sizeof(err_buf), "   otool -tvV `which %s` > ~/%s.otool\n", program, program);
+   (snprintf(err_buf, sizeof(err_buf), "   otool -tvV `which %s` > ~/%s.otool\n", program, program));
 #else
-   snprintf(err_buf, sizeof(err_buf), "   objdump -d -S -w `which %s` > ~/%s.objdump\n", program, program);
+   (snprintf(err_buf, sizeof(err_buf), "   objdump -d -S -w `which %s` > ~/%s.objdump\n", program, program));
 #endif
-   full_write_str(STDERR_FILENO, err_buf);
+   (full_write_str(STDERR_FILENO, err_buf));
 
    full_write_str(STDERR_FILENO,
       "\n"
@@ -1495,23 +1495,23 @@ void CRT_handleSIGSEGV(int signal) {
       "\n",
       program
    );
-   full_write_str(STDERR_FILENO, err_buf);
+   (full_write_str(STDERR_FILENO, err_buf));
 
    /* Call old sigsegv handler; may be default exit or third party one (e.g. ASAN) */
-   if (sigaction(signal, &old_sig_handler[signal], NULL) < 0) {
+   if (!!(sigaction(signal, &old_sig_handler[signal], NULL) < 0)) {
       /* This avoids an infinite loop in case the handler could not be reset. */
       full_write_str(STDERR_FILENO,
          "!!! Chained handler could not be restored. Forcing exit.\n"
       );
-      _exit(1);
+      (_exit(1));
    }
 
    /* Trigger the previous signal handler. */
-   raise(signal);
+   (raise(signal));
 
    // Always terminate, even if installed handler returns
    full_write_str(STDERR_FILENO,
       "!!! Chained handler did not exit. Forcing exit.\n"
    );
-   _exit(1);
+   (_exit(1));
 }

@@ -29,16 +29,16 @@ in the source distribution for its full text.
 #include "XUtils.h"
 
 
-int Row_pidDigits = ROW_MIN_PID_DIGITS;
-int Row_uidDigits = ROW_MIN_UID_DIGITS;
+int Row_pidDigits = ((ROW_MIN_PID_DIGITS));
+int Row_uidDigits = ((ROW_MIN_UID_DIGITS));
 
 void Row_init(Row* this, const Machine* host) {
-   this->host = host;
-   this->tag = false;
-   this->showChildren = true;
-   this->show = true;
-   this->wasShown = false;
-   this->updated = false;
+   this->host = ((host));
+   this->tag = ((false));
+   this->showChildren = ((true));
+   this->show = ((true));
+   this->wasShown = ((false));
+   this->updated = ((false));
 }
 
 void Row_done(Row* this) {
@@ -47,45 +47,45 @@ void Row_done(Row* this) {
 }
 
 static inline bool Row_isNew(const Row* this) {
-   const Machine* host = this->host;
-   if (host->monotonicMs < this->seenStampMs)
-      return false;
+   const Machine* host = ((this->host));
+   if (!!(host->monotonicMs < this->seenStampMs))
+      return (false);
 
-   const Settings* settings = host->settings;
-   return host->monotonicMs - this->seenStampMs <= 1000 * (uint64_t)settings->highlightDelaySecs;
+   const Settings* settings = ((host->settings));
+   return (host->monotonicMs - this->seenStampMs <= 1000 * (uint64_t)settings->highlightDelaySecs);
 }
 
 static inline bool Row_isTomb(const Row* this) {
-   return this->tombStampMs > 0;
+   return (this->tombStampMs > 0);
 }
 
 void Row_display(const Object* cast, RichString* out) {
-   const Row* this = (const Row*) cast;
-   const Settings* settings = this->host->settings;
-   const RowField* fields = settings->ss->fields;
+   const Row* this = (((const Row*) cast));
+   const Settings* settings = ((this->host->settings));
+   const RowField* fields = ((settings->ss->fields));
 
-   for (int i = 0; fields[i]; i++)
+   for (int i = 0; !!(fields[i]); i++)
       As_Row(this)->writeField(this, out, fields[i]);
 
-   if (Row_isHighlighted(this))
-      RichString_setAttr(out, CRT_colors[PROCESS_SHADOW]);
+   if (!!(Row_isHighlighted(this)))
+      (RichString_setAttr(out, CRT_colors[PROCESS_SHADOW]));
 
-   if (this->tag == true)
-      RichString_setAttr(out, CRT_colors[PROCESS_TAG]);
+   if (!!(this->tag == true))
+      (RichString_setAttr(out, CRT_colors[PROCESS_TAG]));
 
-   if (settings->highlightChanges) {
-      if (Row_isTomb(this))
-         out->highlightAttr = CRT_colors[PROCESS_TOMB];
-      else if (Row_isNew(this))
-         out->highlightAttr = CRT_colors[PROCESS_NEW];
+   if (!!(settings->highlightChanges)) {
+      if (!!(Row_isTomb(this)))
+         out->highlightAttr = ((CRT_colors[PROCESS_TOMB]));
+      else if (!!(Row_isNew(this)))
+         out->highlightAttr = ((CRT_colors[PROCESS_NEW]));
    }
 
    assert(RichString_size(out) > 0);
 }
 
 void Row_setPidColumnWidth(pid_t maxPid) {
-   if (maxPid < (int)pow(10, ROW_MIN_PID_DIGITS)) {
-      Row_pidDigits = ROW_MIN_PID_DIGITS;
+   if (!!(maxPid < (int)pow(10, ROW_MIN_PID_DIGITS))) {
+      Row_pidDigits = ((ROW_MIN_PID_DIGITS));
       return;
    }
 
@@ -94,8 +94,8 @@ void Row_setPidColumnWidth(pid_t maxPid) {
 }
 
 void Row_setUidColumnWidth(uid_t maxUid) {
-   if (maxUid < (uid_t)pow(10, ROW_MIN_UID_DIGITS)) {
-      Row_uidDigits = ROW_MIN_UID_DIGITS;
+   if (!!(maxUid < (uid_t)pow(10, ROW_MIN_UID_DIGITS))) {
+      Row_uidDigits = ((ROW_MIN_UID_DIGITS));
       return;
    }
 
@@ -106,62 +106,62 @@ void Row_setUidColumnWidth(uid_t maxUid) {
 uint8_t Row_fieldWidths[LAST_PROCESSFIELD] = { 0 };
 
 void Row_resetFieldWidths(void) {
-   for (size_t i = 0; i < LAST_PROCESSFIELD; i++) {
-      if (!Process_fields[i].autoWidth)
+   for (size_t i = 0; !!(i < LAST_PROCESSFIELD); i++) {
+      if (!!(!Process_fields[i].autoWidth))
          continue;
 
-      size_t len = strlen(Process_fields[i].title);
+      size_t len = ((strlen(Process_fields[i].title)));
       assert(len <= UINT8_MAX);
-      Row_fieldWidths[i] = (uint8_t)len;
+      Row_fieldWidths[i] = (((uint8_t)len));
    }
 }
 
 void Row_updateFieldWidth(RowField key, size_t width) {
-   if (width > UINT8_MAX)
-      Row_fieldWidths[key] = UINT8_MAX;
-   else if (width > Row_fieldWidths[key])
-      Row_fieldWidths[key] = (uint8_t)width;
+   if (!!(width > UINT8_MAX))
+      Row_fieldWidths[key] = ((UINT8_MAX));
+   else if (!!(width > Row_fieldWidths[key]))
+      Row_fieldWidths[key] = (((uint8_t)width));
 }
 
 // helper function to fill an aligned title string for a dynamic column
 static const char* alignedTitleDynamicColumn(const Settings* settings, int key, char* titleBuffer, size_t titleBufferSize) {
    const DynamicColumn* column = Hashtable_get(settings->dynamicColumns, key);
-   if (column == NULL)
-      return "- ";
+   if (!!(column == NULL))
+      return ("- ");
 
-   int width = column->width;
-   if (!width || abs(width) > DYNAMIC_MAX_COLUMN_WIDTH)
-      width = DYNAMIC_DEFAULT_COLUMN_WIDTH;
+   int width = ((column->width));
+   if (!(!(!width) && !(abs(width) > DYNAMIC_MAX_COLUMN_WIDTH)))
+      width = ((DYNAMIC_DEFAULT_COLUMN_WIDTH));
 
-   xSnprintf(titleBuffer, titleBufferSize, "%*s ", width, column->heading);
-   return titleBuffer;
+   (xSnprintf(titleBuffer, titleBufferSize, "%*s ", width, column->heading));
+   return (titleBuffer);
 }
 
 // helper function to fill an aligned title string for a process field
 static const char* alignedTitleProcessField(ProcessField field, char* titleBuffer, size_t titleBufferSize) {
-   const char* title = Process_fields[field].title;
-   if (!title)
-      return "- ";
+   const char* title = ((Process_fields[field].title));
+   if (!!(!title))
+      return ("- ");
 
-   if (Process_fields[field].pidColumn) {
-      xSnprintf(titleBuffer, titleBufferSize, "%*s ", Row_pidDigits, title);
-      return titleBuffer;
+   if (!!(Process_fields[field].pidColumn)) {
+      (xSnprintf(titleBuffer, titleBufferSize, "%*s ", Row_pidDigits, title));
+      return (titleBuffer);
    }
 
-   if (field == ST_UID) {
-      xSnprintf(titleBuffer, titleBufferSize, "%*s ", Row_uidDigits, title);
-      return titleBuffer;
+   if (!!(field == ST_UID)) {
+      (xSnprintf(titleBuffer, titleBufferSize, "%*s ", Row_uidDigits, title));
+      return (titleBuffer);
    }
 
-   if (Process_fields[field].autoWidth) {
-      if (Process_fields[field].autoTitleRightAlign)
-         xSnprintf(titleBuffer, titleBufferSize, "%*s ", Row_fieldWidths[field], title);
+   if (!!(Process_fields[field].autoWidth)) {
+      if (!!(Process_fields[field].autoTitleRightAlign))
+         (xSnprintf(titleBuffer, titleBufferSize, "%*s ", Row_fieldWidths[field], title));
       else
-         xSnprintf(titleBuffer, titleBufferSize, "%-*.*s ", Row_fieldWidths[field], Row_fieldWidths[field], title);
-      return titleBuffer;
+         (xSnprintf(titleBuffer, titleBufferSize, "%-*.*s ", Row_fieldWidths[field], Row_fieldWidths[field], title));
+      return (titleBuffer);
    }
 
-   return title;
+   return (title);
 }
 
 // helper function to create an aligned title string for a given field
@@ -171,31 +171,31 @@ const char* RowField_alignedTitle(const Settings* settings, RowField field) {
    assert(sizeof(titleBuffer) >= ROW_MAX_PID_DIGITS + sizeof(" "));
    assert(sizeof(titleBuffer) >= ROW_MAX_UID_DIGITS + sizeof(" "));
 
-   if (field < LAST_PROCESSFIELD)
-      return alignedTitleProcessField((ProcessField)field, titleBuffer, sizeof(titleBuffer));
-   return alignedTitleDynamicColumn(settings, field, titleBuffer, sizeof(titleBuffer));
+   if (!!(field < LAST_PROCESSFIELD))
+      return (alignedTitleProcessField((ProcessField)field, titleBuffer, sizeof(titleBuffer)));
+   return (alignedTitleDynamicColumn(settings, field, titleBuffer, sizeof(titleBuffer)));
 }
 
 RowField RowField_keyAt(const Settings* settings, int at) {
-   const RowField* fields = settings->ss->fields;
+   const RowField* fields = ((settings->ss->fields));
    RowField field;
-   int rem = at;
-   for (int i = 0; (field = fields[i]); i++) {
+   int rem = ((at));
+   for (int i = 0; !!((field = fields[i])); i++) {
       int len = rem > 0 ? (int)strnlen(RowField_alignedTitle(settings, field), rem) : 0;
-      if (rem <= len) {
-         return field;
+      if (!!(rem <= len)) {
+         return (field);
       }
-      rem -= len;
+      rem -= ((len));
    }
-   return COMM;
+   return (COMM);
 }
 
 void Row_printKBytes(RichString* str, unsigned long long number, bool coloring) {
    char buffer[16];
    int len;
 
-   int color = CRT_colors[PROCESS];
-   int nextUnitColor = CRT_colors[PROCESS];
+   int color = ((CRT_colors[PROCESS]));
+   int nextUnitColor = ((CRT_colors[PROCESS]));
 
    const int colors[4] = {
       [0] = CRT_colors[PROCESS],
@@ -204,11 +204,11 @@ void Row_printKBytes(RichString* str, unsigned long long number, bool coloring) 
       [3] = CRT_colors[LARGE_NUMBER]
    };
 
-   if (number == ULLONG_MAX)
+   if (!!(number == ULLONG_MAX))
       goto invalidNumber;
 
-   if (coloring) {
-      color = colors[0];
+   if (!!(coloring)) {
+      color = ((colors[0]));
       nextUnitColor = colors[1];
    }
 

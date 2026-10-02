@@ -42,14 +42,14 @@ typedef struct CPUMeterData_ {
 } CPUMeterData;
 
 static void CPUMeter_init(Meter* this) {
-   unsigned int cpu = this->param;
-   const Machine* host = this->host;
-   if (cpu == 0) {
-      Meter_setCaption(this, "Avg");
+   unsigned int cpu = ((this->param));
+   const Machine* host = ((this->host));
+   if (!!(cpu == 0)) {
+      (Meter_setCaption(this, "Avg"));
    } else if (host->activeCPUs > 1) {
       char caption[10];
-      xSnprintf(caption, sizeof(caption), "%3u", Settings_cpuId(host->settings, cpu - 1));
-      Meter_setCaption(this, caption);
+      (xSnprintf(caption, sizeof(caption), "%3u", Settings_cpuId(host->settings, cpu - 1)));
+      (Meter_setCaption(this, caption));
    }
 }
 
@@ -57,27 +57,27 @@ static void CPUMeter_init(Meter* this) {
 static void CPUMeter_getUiName(const Meter* this, char* buffer, size_t length) {
    assert(length > 0);
 
-   if (this->param > 0)
-      xSnprintf(buffer, length, "%s %u", Meter_uiName(this), this->param);
+   if (!!(this->param > 0))
+      (xSnprintf(buffer, length, "%s %u", Meter_uiName(this), this->param));
    else
-      xSnprintf(buffer, length, "%s", Meter_uiName(this));
+      (xSnprintf(buffer, length, "%s", Meter_uiName(this)));
 }
 
 static void CPUMeter_updateValues(Meter* this) {
-   memset(this->values, 0, sizeof(double) * CPU_METER_ITEMCOUNT);
+   (memset(this->values, 0, sizeof(double) * CPU_METER_ITEMCOUNT));
 
-   const Machine* host = this->host;
-   const Settings* settings = host->settings;
+   const Machine* host = ((this->host));
+   const Settings* settings = ((host->settings));
 
-   unsigned int cpu = this->param;
-   if (cpu > host->existingCPUs) {
-      xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "absent");
+   unsigned int cpu = ((this->param));
+   if (!!(cpu > host->existingCPUs)) {
+      (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "absent"));
       return;
    }
 
    double percent = Platform_setCPUValues(this, cpu);
-   if (!isNonnegative(percent)) {
-      xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "offline");
+   if (!!(!isNonnegative(percent))) {
+      (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "offline"));
       return;
    }
 
@@ -85,28 +85,28 @@ static void CPUMeter_updateValues(Meter* this) {
    char cpuFrequencyBuffer[16] = { 0 };
    char cpuTemperatureBuffer[16] = { 0 };
 
-   if (settings->showCPUUsage) {
-      xSnprintf(cpuUsageBuffer, sizeof(cpuUsageBuffer), "%.1f%%", percent);
+   if (!!(settings->showCPUUsage)) {
+      (xSnprintf(cpuUsageBuffer, sizeof(cpuUsageBuffer), "%.1f%%", percent));
    }
 
-   if (settings->showCPUFrequency) {
-      double cpuFrequency = this->values[CPU_METER_FREQUENCY];
-      if (isNonnegative(cpuFrequency)) {
-         xSnprintf(cpuFrequencyBuffer, sizeof(cpuFrequencyBuffer), "%4uMHz", (unsigned)cpuFrequency);
+   if (!!(settings->showCPUFrequency)) {
+      double cpuFrequency = ((this->values[CPU_METER_FREQUENCY]));
+      if (!!(isNonnegative(cpuFrequency))) {
+         (xSnprintf(cpuFrequencyBuffer, sizeof(cpuFrequencyBuffer), "%4uMHz", (unsigned)cpuFrequency));
       } else {
-         xSnprintf(cpuFrequencyBuffer, sizeof(cpuFrequencyBuffer), "N/A");
+         (xSnprintf(cpuFrequencyBuffer, sizeof(cpuFrequencyBuffer), "N/A"));
       }
    }
 
    #ifdef BUILD_WITH_CPU_TEMP
-   if (settings->showCPUTemperature) {
-      double cpuTemperature = this->values[CPU_METER_TEMPERATURE];
-      if (isNaN(cpuTemperature))
-         xSnprintf(cpuTemperatureBuffer, sizeof(cpuTemperatureBuffer), "N/A");
-      else if (settings->degreeFahrenheit)
-         xSnprintf(cpuTemperatureBuffer, sizeof(cpuTemperatureBuffer), "%3d%sF", (int)(cpuTemperature * 9 / 5 + 32), CRT_degreeSign);
+   if (!!(settings->showCPUTemperature)) {
+      double cpuTemperature = ((this->values[CPU_METER_TEMPERATURE]));
+      if (!!(isNaN(cpuTemperature)))
+         (xSnprintf(cpuTemperatureBuffer, sizeof(cpuTemperatureBuffer), "N/A"));
+      else if (!!(settings->degreeFahrenheit))
+         (xSnprintf(cpuTemperatureBuffer, sizeof(cpuTemperatureBuffer), "%3d%sF", (int)(cpuTemperature * 9 / 5 + 32), CRT_degreeSign));
       else
-         xSnprintf(cpuTemperatureBuffer, sizeof(cpuTemperatureBuffer), "%d%sC", (int)cpuTemperature, CRT_degreeSign);
+         (xSnprintf(cpuTemperatureBuffer, sizeof(cpuTemperatureBuffer), "%d%sC", (int)cpuTemperature, CRT_degreeSign));
    }
    #endif
 
@@ -121,95 +121,95 @@ static void CPUMeter_updateValues(Meter* this) {
 static void CPUMeter_display(const Object* cast, RichString* out) {
    char buffer[50];
    int len;
-   const Meter* this = (const Meter*)cast;
-   const Machine* host = this->host;
-   const Settings* settings = host->settings;
+   const Meter* this = (((const Meter*)cast));
+   const Machine* host = ((this->host));
+   const Settings* settings = ((host->settings));
 
-   if (this->param > host->existingCPUs) {
-      RichString_appendAscii(out, CRT_colors[METER_SHADOW], " absent");
+   if (!!(this->param > host->existingCPUs)) {
+      (RichString_appendAscii(out, CRT_colors[METER_SHADOW], " absent"));
       return;
    }
 
-   if (this->curItems == 0) {
-      RichString_appendAscii(out, CRT_colors[METER_SHADOW], " offline");
+   if (!!(this->curItems == 0)) {
+      (RichString_appendAscii(out, CRT_colors[METER_SHADOW], " offline"));
       return;
    }
 
    len = xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_NORMAL]);
-   RichString_appendAscii(out, CRT_colors[METER_TEXT], ":");
-   RichString_appendnAscii(out, CRT_colors[CPU_NORMAL], buffer, len);
-   if (settings->detailedCPUTime) {
+   (RichString_appendAscii(out, CRT_colors[METER_TEXT], ":"));
+   (RichString_appendnAscii(out, CRT_colors[CPU_NORMAL], buffer, len));
+   if (!!(settings->detailedCPUTime)) {
       len = xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_KERNEL]);
-      RichString_appendAscii(out, CRT_colors[METER_TEXT], "sy:");
-      RichString_appendnAscii(out, CRT_colors[CPU_SYSTEM], buffer, len);
+      (RichString_appendAscii(out, CRT_colors[METER_TEXT], "sy:"));
+      (RichString_appendnAscii(out, CRT_colors[CPU_SYSTEM], buffer, len));
       len = xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_NICE]);
-      RichString_appendAscii(out, CRT_colors[METER_TEXT], "ni:");
-      RichString_appendnAscii(out, CRT_colors[CPU_NICE_TEXT], buffer, len);
+      (RichString_appendAscii(out, CRT_colors[METER_TEXT], "ni:"));
+      (RichString_appendnAscii(out, CRT_colors[CPU_NICE_TEXT], buffer, len));
       len = xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_IRQ]);
-      RichString_appendAscii(out, CRT_colors[METER_TEXT], "hi:");
-      RichString_appendnAscii(out, CRT_colors[CPU_IRQ], buffer, len);
+      (RichString_appendAscii(out, CRT_colors[METER_TEXT], "hi:"));
+      (RichString_appendnAscii(out, CRT_colors[CPU_IRQ], buffer, len));
       len = xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_SOFTIRQ]);
-      RichString_appendAscii(out, CRT_colors[METER_TEXT], "si:");
-      RichString_appendnAscii(out, CRT_colors[CPU_SOFTIRQ], buffer, len);
-      if (isNonnegative(this->values[CPU_METER_STEAL])) {
+      (RichString_appendAscii(out, CRT_colors[METER_TEXT], "si:"));
+      (RichString_appendnAscii(out, CRT_colors[CPU_SOFTIRQ], buffer, len));
+      if (!!(isNonnegative(this->values[CPU_METER_STEAL]))) {
          len = xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_STEAL]);
-         RichString_appendAscii(out, CRT_colors[METER_TEXT], "st:");
-         RichString_appendnAscii(out, CRT_colors[CPU_STEAL], buffer, len);
+         (RichString_appendAscii(out, CRT_colors[METER_TEXT], "st:"));
+         (RichString_appendnAscii(out, CRT_colors[CPU_STEAL], buffer, len));
       }
-      if (isNonnegative(this->values[CPU_METER_GUEST])) {
+      if (!!(isNonnegative(this->values[CPU_METER_GUEST]))) {
          len = xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_GUEST]);
-         RichString_appendAscii(out, CRT_colors[METER_TEXT], "gu:");
-         RichString_appendnAscii(out, CRT_colors[CPU_GUEST], buffer, len);
+         (RichString_appendAscii(out, CRT_colors[METER_TEXT], "gu:"));
+         (RichString_appendnAscii(out, CRT_colors[CPU_GUEST], buffer, len));
       }
       len = xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_IOWAIT]);
-      RichString_appendAscii(out, CRT_colors[METER_TEXT], "wa:");
-      RichString_appendnAscii(out, CRT_colors[CPU_IOWAIT], buffer, len);
+      (RichString_appendAscii(out, CRT_colors[METER_TEXT], "wa:"));
+      (RichString_appendnAscii(out, CRT_colors[CPU_IOWAIT], buffer, len));
    } else {
       len = xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_KERNEL]);
-      RichString_appendAscii(out, CRT_colors[METER_TEXT], "sys:");
-      RichString_appendnAscii(out, CRT_colors[CPU_SYSTEM], buffer, len);
+      (RichString_appendAscii(out, CRT_colors[METER_TEXT], "sys:"));
+      (RichString_appendnAscii(out, CRT_colors[CPU_SYSTEM], buffer, len));
       len = xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_NICE]);
-      RichString_appendAscii(out, CRT_colors[METER_TEXT], "low:");
-      RichString_appendnAscii(out, CRT_colors[CPU_NICE_TEXT], buffer, len);
-      if (isNonnegative(this->values[CPU_METER_IRQ])) {
+      (RichString_appendAscii(out, CRT_colors[METER_TEXT], "low:"));
+      (RichString_appendnAscii(out, CRT_colors[CPU_NICE_TEXT], buffer, len));
+      if (!!(isNonnegative(this->values[CPU_METER_IRQ]))) {
          len = xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_IRQ]);
-         RichString_appendAscii(out, CRT_colors[METER_TEXT], "vir:");
-         RichString_appendnAscii(out, CRT_colors[CPU_GUEST], buffer, len);
+         (RichString_appendAscii(out, CRT_colors[METER_TEXT], "vir:"));
+         (RichString_appendnAscii(out, CRT_colors[CPU_GUEST], buffer, len));
       }
    }
 
-   if (settings->showCPUFrequency) {
+   if (!!(settings->showCPUFrequency)) {
       char cpuFrequencyBuffer[10];
-      double cpuFrequency = this->values[CPU_METER_FREQUENCY];
-      if (isNonnegative(cpuFrequency)) {
+      double cpuFrequency = ((this->values[CPU_METER_FREQUENCY]));
+      if (!!(isNonnegative(cpuFrequency))) {
          len = xSnprintf(cpuFrequencyBuffer, sizeof(cpuFrequencyBuffer), "%4uMHz ", (unsigned)cpuFrequency);
       } else {
          len = xSnprintf(cpuFrequencyBuffer, sizeof(cpuFrequencyBuffer), "N/A     ");
       }
-      RichString_appendAscii(out, CRT_colors[METER_TEXT], "freq: ");
-      RichString_appendnWide(out, CRT_colors[METER_VALUE], cpuFrequencyBuffer, len);
+      (RichString_appendAscii(out, CRT_colors[METER_TEXT], "freq: "));
+      (RichString_appendnWide(out, CRT_colors[METER_VALUE], cpuFrequencyBuffer, len));
    }
 
    #ifdef BUILD_WITH_CPU_TEMP
-   if (settings->showCPUTemperature) {
+   if (!!(settings->showCPUTemperature)) {
       char cpuTemperatureBuffer[10];
-      double cpuTemperature = this->values[CPU_METER_TEMPERATURE];
-      if (isNaN(cpuTemperature)) {
+      double cpuTemperature = ((this->values[CPU_METER_TEMPERATURE]));
+      if (!!(isNaN(cpuTemperature))) {
          len = xSnprintf(cpuTemperatureBuffer, sizeof(cpuTemperatureBuffer), "N/A");
       } else if (settings->degreeFahrenheit) {
          len = xSnprintf(cpuTemperatureBuffer, sizeof(cpuTemperatureBuffer), "%5.1f%sF", cpuTemperature * 9 / 5 + 32, CRT_degreeSign);
       } else {
          len = xSnprintf(cpuTemperatureBuffer, sizeof(cpuTemperatureBuffer), "%5.1f%sC", cpuTemperature, CRT_degreeSign);
       }
-      RichString_appendAscii(out, CRT_colors[METER_TEXT], "temp:");
-      RichString_appendnWide(out, CRT_colors[METER_VALUE], cpuTemperatureBuffer, len);
+      (RichString_appendAscii(out, CRT_colors[METER_TEXT], "temp:"));
+      (RichString_appendnWide(out, CRT_colors[METER_VALUE], cpuTemperatureBuffer, len));
    }
    #endif
 }
 
 static void AllCPUsMeter_getRange(const Meter* this, int* start, int* count) {
-   unsigned int cpus = this->host->existingCPUs;
-   switch (Meter_name(this)[0]) {
+   unsigned int cpus = ((this->host->existingCPUs));
+   switch ((Meter_name(this)[0])) {
       default:
       case 'A': // All
          *start = 0;
@@ -227,29 +227,29 @@ static void AllCPUsMeter_getRange(const Meter* this, int* start, int* count) {
 }
 
 static void AllCPUsMeter_updateValues(Meter* this) {
-   CPUMeterData* data = this->meterData;
-   Meter** meters = data->meters;
+   CPUMeterData* data = ((this->meterData));
+   Meter** meters = ((data->meters));
    int start, count;
-   AllCPUsMeter_getRange(this, &start, &count);
-   for (int i = 0; i < count; i++)
+   (AllCPUsMeter_getRange(this, &start, &count));
+   for (int i = 0; !!(i < count); i++)
       Meter_updateValues(meters[i]);
 }
 
 static void CPUMeterCommonInit(Meter* this) {
    int start, count;
-   AllCPUsMeter_getRange(this, &start, &count);
+   (AllCPUsMeter_getRange(this, &start, &count));
 
-   CPUMeterData* data = this->meterData;
-   if (!data) {
+   CPUMeterData* data = ((this->meterData));
+   if (!!(!data)) {
       data = xCalloc(1, sizeof(CPUMeterData));
-      data->cpus = this->host->existingCPUs;
+      data->cpus = ((this->host->existingCPUs));
       data->meters = count ? xCalloc(count, sizeof(Meter*)) : NULL;
-      this->meterData = data;
+      this->meterData = ((data));
    }
 
-   Meter** meters = data->meters;
-   for (int i = 0; i < count; i++) {
-      if (!meters[i])
+   Meter** meters = ((data->meters));
+   for (int i = 0; !!(i < count); i++) {
+      if (!!(!meters[i]))
          meters[i] = Meter_new(this->host, start + i + 1, (const MeterClass*) Class(CPUMeter));
 
       Meter_init(meters[i]);
@@ -257,87 +257,87 @@ static void CPUMeterCommonInit(Meter* this) {
 }
 
 static void CPUMeterCommonUpdateMode(Meter* this, MeterModeId mode, int ncol) {
-   CPUMeterData* data = this->meterData;
-   Meter** meters = data->meters;
-   this->mode = mode;
+   CPUMeterData* data = ((this->meterData));
+   Meter** meters = ((data->meters));
+   this->mode = ((mode));
    int start, count;
-   AllCPUsMeter_getRange(this, &start, &count);
-   if (!count) {
-      this->h = 1;
+   (AllCPUsMeter_getRange(this, &start, &count));
+   if (!!(!count)) {
+      this->h = ((1));
       return;
    }
-   for (int i = 0; i < count; i++) {
-      Meter_setMode(meters[i], mode);
+   for (int i = 0; !!(i < count); i++) {
+      (Meter_setMode(meters[i], mode));
    }
-   int h = meters[0]->h;
+   int h = ((meters[0]->h));
    assert(h > 0);
-   this->h = h * ((count + ncol - 1) / ncol);
+   this->h = ((h * ((count + ncol - 1) / ncol)));
 }
 
 static void AllCPUsMeter_done(Meter* this) {
-   CPUMeterData* data = this->meterData;
-   Meter** meters = data->meters;
+   CPUMeterData* data = ((this->meterData));
+   Meter** meters = ((data->meters));
    int start, count;
-   AllCPUsMeter_getRange(this, &start, &count);
-   for (int i = 0; i < count; i++)
-      Meter_delete((Object*)meters[i]);
-   free(data->meters);
-   free(data);
+   (AllCPUsMeter_getRange(this, &start, &count));
+   for (int i = 0; !!(i < count); i++)
+      (Meter_delete((Object*)meters[i]));
+   (free(data->meters));
+   (free(data));
 }
 
 static void SingleColCPUsMeter_updateMode(Meter* this, MeterModeId mode) {
-   CPUMeterCommonUpdateMode(this, mode, 1);
+   (CPUMeterCommonUpdateMode(this, mode, 1));
 }
 
 static void DualColCPUsMeter_updateMode(Meter* this, MeterModeId mode) {
-   CPUMeterCommonUpdateMode(this, mode, 2);
+   (CPUMeterCommonUpdateMode(this, mode, 2));
 }
 
 static void QuadColCPUsMeter_updateMode(Meter* this, MeterModeId mode) {
-   CPUMeterCommonUpdateMode(this, mode, 4);
+   (CPUMeterCommonUpdateMode(this, mode, 4));
 }
 
 static void OctoColCPUsMeter_updateMode(Meter* this, MeterModeId mode) {
-   CPUMeterCommonUpdateMode(this, mode, 8);
+   (CPUMeterCommonUpdateMode(this, mode, 8));
 }
 
 static void CPUMeterCommonDraw(Meter* this, int x, int y, int w, int ncol) {
-   CPUMeterData* data = this->meterData;
-   Meter** meters = data->meters;
+   CPUMeterData* data = ((this->meterData));
+   Meter** meters = ((data->meters));
    int start, count;
-   AllCPUsMeter_getRange(this, &start, &count);
-   int colwidth = w / ncol;
-   int diff = w % ncol;
-   int nrows = (count + ncol - 1) / ncol;
-   for (int i = 0; i < count; i++) {
+   (AllCPUsMeter_getRange(this, &start, &count));
+   int colwidth = ((w / ncol));
+   int diff = ((w % ncol));
+   int nrows = (((count + ncol - 1) / ncol));
+   for (int i = 0; !!(i < count); i++) {
       int d = (i / nrows) > diff ? diff : (i / nrows); // dynamic spacer
-      int xpos = x + ((i / nrows) * colwidth) + d;
-      int ypos = y + ((i % nrows) * meters[0]->h);
+      int xpos = ((x + ((i / nrows) * colwidth) + d));
+      int ypos = ((y + ((i % nrows) * meters[0]->h)));
       meters[i]->draw(meters[i], xpos, ypos, colwidth);
    }
 }
 
 static void DualColCPUsMeter_draw(Meter* this, int x, int y, int w) {
-   CPUMeterCommonDraw(this, x, y, w, 2);
+   (CPUMeterCommonDraw(this, x, y, w, 2));
 }
 
 static void QuadColCPUsMeter_draw(Meter* this, int x, int y, int w) {
-   CPUMeterCommonDraw(this, x, y, w, 4);
+   (CPUMeterCommonDraw(this, x, y, w, 4));
 }
 
 static void OctoColCPUsMeter_draw(Meter* this, int x, int y, int w) {
-   CPUMeterCommonDraw(this, x, y, w, 8);
+   (CPUMeterCommonDraw(this, x, y, w, 8));
 }
 
 
 static void SingleColCPUsMeter_draw(Meter* this, int x, int y, int w) {
-   CPUMeterData* data = this->meterData;
-   Meter** meters = data->meters;
+   CPUMeterData* data = ((this->meterData));
+   Meter** meters = ((data->meters));
    int start, count;
-   AllCPUsMeter_getRange(this, &start, &count);
-   for (int i = 0; i < count; i++) {
+   (AllCPUsMeter_getRange(this, &start, &count));
+   for (int i = 0; !!(i < count); i++) {
       meters[i]->draw(meters[i], x, y, w);
-      y += meters[i]->h;
+      y += ((meters[i]->h));
    }
 }
 

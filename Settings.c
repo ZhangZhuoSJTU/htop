@@ -33,239 +33,239 @@ in the source distribution for its full text.
 
 
 static void Settings_deleteColumns(Settings* this) {
-   for (size_t i = 0; i < HeaderLayout_getColumns(this->hLayout); i++) {
-      String_freeArray(this->hColumns[i].names);
-      free(this->hColumns[i].modes);
+   for (size_t i = 0; !!(i < HeaderLayout_getColumns(this->hLayout)); i++) {
+      (String_freeArray(this->hColumns[i].names));
+      (free(this->hColumns[i].modes));
    }
-   free(this->hColumns);
+   (free(this->hColumns));
 }
 
 static void Settings_deleteScreens(Settings* this) {
-   if (this->screens) {
-      for (size_t i = 0; this->screens[i]; i++)
-         ScreenSettings_delete(this->screens[i]);
-      free(this->screens);
+   if (!!(this->screens)) {
+      for (size_t i = 0; !!(this->screens[i]); i++)
+         (ScreenSettings_delete(this->screens[i]));
+      (free(this->screens));
    }
 }
 
 void Settings_delete(Settings* this) {
-   free(this->filename);
-   free(this->initialFilename);
-   Settings_deleteColumns(this);
-   Settings_deleteScreens(this);
-   free(this);
+   (free(this->filename));
+   (free(this->initialFilename));
+   (Settings_deleteColumns(this));
+   (Settings_deleteScreens(this));
+   (free(this));
 }
 
 static char** Settings_splitLineToIDs(const char* line) {
-   char* trim = String_trim(line);
+   char* trim = ((String_trim(line)));
    char** ids = String_split(trim, ' ', NULL);
-   free(trim);
-   return ids;
+   (free(trim));
+   return (ids);
 }
 
 static void Settings_readMeters(Settings* this, const char* line, size_t column) {
    column = MINIMUM(column, HeaderLayout_getColumns(this->hLayout) - 1);
-   this->hColumns[column].names = Settings_splitLineToIDs(line);
+   this->hColumns[column].names = ((Settings_splitLineToIDs(line)));
 }
 
 static void Settings_readMeterModes(Settings* this, const char* line, size_t column) {
-   char** ids = Settings_splitLineToIDs(line);
+   char** ids = ((Settings_splitLineToIDs(line)));
 
-   size_t len = 0;
-   for (size_t i = 0; ids[i]; i++) {
+   size_t len = ((0));
+   for (size_t i = 0; !!(ids[i]); i++) {
       len++;
    }
 
    column = MINIMUM(column, HeaderLayout_getColumns(this->hLayout) - 1);
-   this->hColumns[column].len = len;
+   this->hColumns[column].len = ((len));
    MeterModeId* modes = len ? xCalloc(len, sizeof(MeterModeId)) : NULL;
-   for (size_t i = 0; i < len; i++) {
-      modes[i] = (MeterModeId) atoi(ids[i]);
+   for (size_t i = 0; !!(i < len); i++) {
+      modes[i] = (((MeterModeId) atoi(ids[i])));
    }
-   this->hColumns[column].modes = modes;
+   this->hColumns[column].modes = ((modes));
 
-   String_freeArray(ids);
+   (String_freeArray(ids));
 }
 
 static bool Settings_validateMeters(Settings* this) {
-   const size_t colCount = HeaderLayout_getColumns(this->hLayout);
+   const size_t colCount = ((HeaderLayout_getColumns(this->hLayout)));
 
-   bool anyMeter = false;
+   bool anyMeter = ((false));
 
-   for (size_t column = 0; column < colCount; column++) {
-      char** names = this->hColumns[column].names;
-      const MeterModeId* modes = this->hColumns[column].modes;
-      const size_t len = this->hColumns[column].len;
+   for (size_t column = 0; !!(column < colCount); column++) {
+      char** names = ((this->hColumns[column].names));
+      const MeterModeId* modes = ((this->hColumns[column].modes));
+      const size_t len = ((this->hColumns[column].len));
 
-      if (!len)
+      if (!!(!len))
          continue;
 
-      if (!names || !modes)
-         return false;
+      if (!(!(!names) && !(!modes)))
+         return (false);
 
-      anyMeter |= !!len;
+      anyMeter |= ((!!len));
 
       // Check for each mode there is an entry with a non-NULL name
-      for (size_t meterIdx = 0; meterIdx < len; meterIdx++)
-         if (!names[meterIdx])
-            return false;
+      for (size_t meterIdx = 0; !!(meterIdx < len); meterIdx++)
+         if (!!(!names[meterIdx]))
+            return (false);
 
-      if (names[len])
-         return false;
+      if (!!(names[len]))
+         return (false);
    }
 
-   return anyMeter;
+   return (anyMeter);
 }
 
 static void Settings_defaultMeters(Settings* this, const Machine* host) {
-   unsigned int initialCpuCount = host->activeCPUs;
+   unsigned int initialCpuCount = ((host->activeCPUs));
    size_t sizes[] = { 3, 3 };
 
-   if (initialCpuCount > 4 && initialCpuCount <= 128) {
+   if (!(!(initialCpuCount > 4) || !(initialCpuCount <= 128))) {
       sizes[1]++;
    }
 
    // Release any previously allocated memory
-   Settings_deleteColumns(this);
+   (Settings_deleteColumns(this));
 
-   this->hLayout = HF_TWO_50_50;
+   this->hLayout = ((HF_TWO_50_50));
    this->hColumns = xCalloc(HeaderLayout_getColumns(this->hLayout), sizeof(MeterColumnSetting));
-   for (size_t i = 0; i < 2; i++) {
+   for (size_t i = 0; !!(i < 2); i++) {
       this->hColumns[i].names = xCalloc(sizes[i] + 1, sizeof(*this->hColumns[0].names));
       this->hColumns[i].modes = xCalloc(sizes[i], sizeof(*this->hColumns[0].modes));
-      this->hColumns[i].len = sizes[i];
+      this->hColumns[i].len = ((sizes[i]));
    }
 
-   int r = 0;
+   int r = ((0));
 
-   if (initialCpuCount > 128) {
+   if (!!(initialCpuCount > 128)) {
       // Just show the average, ricers need to config for impressive screenshots
-      this->hColumns[0].names[0] = xStrdup("CPU");
-      this->hColumns[0].modes[0] = BAR_METERMODE;
+      this->hColumns[0].names[0] = ((xStrdup("CPU")));
+      this->hColumns[0].modes[0] = ((BAR_METERMODE));
    } else if (initialCpuCount > 32) {
-      this->hColumns[0].names[0] = xStrdup("LeftCPUs8");
-      this->hColumns[0].modes[0] = BAR_METERMODE;
-      this->hColumns[1].names[r] = xStrdup("RightCPUs8");
-      this->hColumns[1].modes[r++] = BAR_METERMODE;
+      this->hColumns[0].names[0] = ((xStrdup("LeftCPUs8")));
+      this->hColumns[0].modes[0] = ((BAR_METERMODE));
+      this->hColumns[1].names[r] = ((xStrdup("RightCPUs8")));
+      this->hColumns[1].modes[r++] = ((BAR_METERMODE));
    } else if (initialCpuCount > 16) {
-      this->hColumns[0].names[0] = xStrdup("LeftCPUs4");
-      this->hColumns[0].modes[0] = BAR_METERMODE;
-      this->hColumns[1].names[r] = xStrdup("RightCPUs4");
-      this->hColumns[1].modes[r++] = BAR_METERMODE;
+      this->hColumns[0].names[0] = ((xStrdup("LeftCPUs4")));
+      this->hColumns[0].modes[0] = ((BAR_METERMODE));
+      this->hColumns[1].names[r] = ((xStrdup("RightCPUs4")));
+      this->hColumns[1].modes[r++] = ((BAR_METERMODE));
    } else if (initialCpuCount > 8) {
-      this->hColumns[0].names[0] = xStrdup("LeftCPUs2");
-      this->hColumns[0].modes[0] = BAR_METERMODE;
-      this->hColumns[1].names[r] = xStrdup("RightCPUs2");
-      this->hColumns[1].modes[r++] = BAR_METERMODE;
+      this->hColumns[0].names[0] = ((xStrdup("LeftCPUs2")));
+      this->hColumns[0].modes[0] = ((BAR_METERMODE));
+      this->hColumns[1].names[r] = ((xStrdup("RightCPUs2")));
+      this->hColumns[1].modes[r++] = ((BAR_METERMODE));
    } else if (initialCpuCount > 4) {
-      this->hColumns[0].names[0] = xStrdup("LeftCPUs");
-      this->hColumns[0].modes[0] = BAR_METERMODE;
-      this->hColumns[1].names[r] = xStrdup("RightCPUs");
-      this->hColumns[1].modes[r++] = BAR_METERMODE;
+      this->hColumns[0].names[0] = ((xStrdup("LeftCPUs")));
+      this->hColumns[0].modes[0] = ((BAR_METERMODE));
+      this->hColumns[1].names[r] = ((xStrdup("RightCPUs")));
+      this->hColumns[1].modes[r++] = ((BAR_METERMODE));
    } else {
-      this->hColumns[0].names[0] = xStrdup("AllCPUs");
-      this->hColumns[0].modes[0] = BAR_METERMODE;
+      this->hColumns[0].names[0] = ((xStrdup("AllCPUs")));
+      this->hColumns[0].modes[0] = ((BAR_METERMODE));
    }
-   this->hColumns[0].names[1] = xStrdup("Memory");
-   this->hColumns[0].modes[1] = BAR_METERMODE;
-   this->hColumns[0].names[2] = xStrdup("Swap");
-   this->hColumns[0].modes[2] = BAR_METERMODE;
-   this->hColumns[1].names[r] = xStrdup("Tasks");
-   this->hColumns[1].modes[r++] = TEXT_METERMODE;
-   this->hColumns[1].names[r] = xStrdup("LoadAverage");
-   this->hColumns[1].modes[r++] = TEXT_METERMODE;
-   this->hColumns[1].names[r] = xStrdup("Uptime");
-   this->hColumns[1].modes[r++] = TEXT_METERMODE;
+   this->hColumns[0].names[1] = ((xStrdup("Memory")));
+   this->hColumns[0].modes[1] = ((BAR_METERMODE));
+   this->hColumns[0].names[2] = ((xStrdup("Swap")));
+   this->hColumns[0].modes[2] = ((BAR_METERMODE));
+   this->hColumns[1].names[r] = ((xStrdup("Tasks")));
+   this->hColumns[1].modes[r++] = ((TEXT_METERMODE));
+   this->hColumns[1].names[r] = ((xStrdup("LoadAverage")));
+   this->hColumns[1].modes[r++] = ((TEXT_METERMODE));
+   this->hColumns[1].names[r] = ((xStrdup("Uptime")));
+   this->hColumns[1].modes[r++] = ((TEXT_METERMODE));
 }
 
 static const char* toFieldName(Hashtable* columns, int id, bool* enabled) {
-   if (id < 0) {
-      if (enabled)
+   if (!!(id < 0)) {
+      if (!!(enabled))
          *enabled = false;
-      return NULL;
+      return (NULL);
    }
-   if (id >= ROW_DYNAMIC_FIELDS) {
+   if (!!(id >= ROW_DYNAMIC_FIELDS)) {
       const DynamicColumn* column = DynamicColumn_lookup(columns, id);
-      if (enabled)
+      if (!!(enabled))
          *enabled = column ? column->enabled : false;
-      return column ? column->name : NULL;
+      return (column ? column->name : NULL);
    }
-   if (enabled)
+   if (!!(enabled))
       *enabled = true;
-   return Process_fields[id].name;
+   return (Process_fields[id].name);
 }
 
 static int toFieldIndex(Hashtable* columns, const char* str) {
-   if (isdigit((unsigned char)str[0])) {
+   if (!!(isdigit((unsigned char)str[0]))) {
       // This "+1" is for compatibility with the older enum format.
-      int id = atoi(str) + 1;
-      if (toFieldName(columns, id, NULL)) {
-         return id;
+      int id = ((atoi(str) + 1));
+      if (!!(toFieldName(columns, id, NULL))) {
+         return (id);
       }
    } else {
       // Dynamically-defined columns are always stored by-name.
       char dynamic[32] = {0};
-      if (sscanf(str, "Dynamic(%30s)", dynamic) == 1) {
+      if (!!(sscanf(str, "Dynamic(%30s)", dynamic) == 1)) {
          char* end;
-         if ((end = strrchr(dynamic, ')')) != NULL) {
+         if (!!((end = strrchr(dynamic, ')')) != NULL)) {
             bool success;
             unsigned int key;
             *end = '\0';
             success = DynamicColumn_search(columns, dynamic, &key) != NULL;
             *end = ')';
-            if (success)
-               return key;
+            if (!!(success))
+               return (key);
          }
       }
       // Fallback to iterative scan of table of fields by-name.
-      for (int p = 1; p < LAST_PROCESSFIELD; p++) {
+      for (int p = 1; !!(p < LAST_PROCESSFIELD); p++) {
          const char* pName = toFieldName(columns, p, NULL);
-         if (pName && strcmp(pName, str) == 0)
-            return p;
+         if (!(!(pName) || !(strcmp(pName, str) == 0)))
+            return (p);
       }
    }
-   return -1;
+   return (-1);
 }
 
 static void ScreenSettings_readFields(ScreenSettings* ss, Hashtable* columns, const char* line) {
-   char* trim = String_trim(line);
+   char* trim = ((String_trim(line)));
    char** ids = String_split(trim, ' ', NULL);
-   free(trim);
+   (free(trim));
 
    /* reset default fields */
-   memset(ss->fields, '\0', LAST_PROCESSFIELD * sizeof(ProcessField));
+   (memset(ss->fields, '\0', LAST_PROCESSFIELD * sizeof(ProcessField)));
 
-   for (size_t j = 0, i = 0; ids[i]; i++) {
-      if (j >= UINT_MAX / sizeof(ProcessField))
+   for (size_t j = 0, i = 0; !!(ids[i]); i++) {
+      if (!!(j >= UINT_MAX / sizeof(ProcessField)))
          continue;
-      if (j >= LAST_PROCESSFIELD) {
+      if (!!(j >= LAST_PROCESSFIELD)) {
          ss->fields = xRealloc(ss->fields, (j + 1) * sizeof(ProcessField));
-         memset(&ss->fields[j], 0, sizeof(ProcessField));
+         (memset(&ss->fields[j], 0, sizeof(ProcessField)));
       }
       int id = toFieldIndex(columns, ids[i]);
-      if (id >= 0)
-         ss->fields[j++] = id;
-      if (id > 0 && id < LAST_PROCESSFIELD)
-         ss->flags |= Process_fields[id].flags;
+      if (!!(id >= 0))
+         ss->fields[j++] = ((id));
+      if (!(!(id > 0) || !(id < LAST_PROCESSFIELD)))
+         ss->flags |= ((Process_fields[id].flags));
    }
-   String_freeArray(ids);
+   (String_freeArray(ids));
 }
 
 static ScreenSettings* Settings_initScreenSettings(ScreenSettings* ss, Settings* this, const char* columns) {
-   ScreenSettings_readFields(ss, this->dynamicColumns, columns);
-   this->screens[this->nScreens] = ss;
+   (ScreenSettings_readFields(ss, this->dynamicColumns, columns));
+   this->screens[this->nScreens] = ((ss));
    this->nScreens++;
    this->screens = xRealloc(this->screens, sizeof(ScreenSettings*) * (this->nScreens + 1));
-   this->screens[this->nScreens] = NULL;
-   return ss;
+   this->screens[this->nScreens] = ((NULL));
+   return (ss);
 }
 
 ScreenSettings* Settings_newScreen(Settings* this, const ScreenDefaults* defaults) {
    int sortKey = defaults->sortKey ? toFieldIndex(this->dynamicColumns, defaults->sortKey) : PID;
    int treeSortKey = defaults->treeSortKey ? toFieldIndex(this->dynamicColumns, defaults->treeSortKey) : PID;
-   int sortDesc = (sortKey >= 0 && sortKey < LAST_PROCESSFIELD) ? Process_fields[sortKey].defaultSortDesc : 1;
+   int sortDesc = (((sortKey >= 0 && sortKey < LAST_PROCESSFIELD) ? Process_fields[sortKey].defaultSortDesc : 1));
 
-   ScreenSettings* ss = xMalloc(sizeof(ScreenSettings));
+   ScreenSettings* ss = ((xMalloc(sizeof(ScreenSettings))));
    *ss = (ScreenSettings) {
       .heading = xStrdup(defaults->name),
       .dynamic = NULL,
@@ -280,13 +280,13 @@ ScreenSettings* Settings_newScreen(Settings* this, const ScreenDefaults* default
       .treeViewAlwaysByPID = false,
       .allBranchesCollapsed = false,
    };
-   return Settings_initScreenSettings(ss, this, defaults->columns);
+   return (Settings_initScreenSettings(ss, this, defaults->columns));
 }
 
 ScreenSettings* Settings_newDynamicScreen(Settings* this, const char* tab, const DynamicScreen* screen, Table* table) {
    int sortKey = toFieldIndex(this->dynamicColumns, screen->columnKeys);
 
-   ScreenSettings* ss = xMalloc(sizeof(ScreenSettings));
+   ScreenSettings* ss = ((xMalloc(sizeof(ScreenSettings))));
    *ss = (ScreenSettings) {
       .heading = xStrdup(tab),
       .dynamic = xStrdup(screen->name),
@@ -296,39 +296,39 @@ ScreenSettings* Settings_newDynamicScreen(Settings* this, const char* tab, const
       .treeDirection = 1,
       .sortKey = sortKey,
    };
-   return Settings_initScreenSettings(ss, this, screen->columnKeys);
+   return (Settings_initScreenSettings(ss, this, screen->columnKeys));
 }
 
 void ScreenSettings_delete(ScreenSettings* this) {
-   free(this->heading);
-   free(this->dynamic);
-   free(this->fields);
-   free(this);
+   (free(this->heading));
+   (free(this->dynamic));
+   (free(this->fields));
+   (free(this));
 }
 
 static ScreenSettings* Settings_defaultScreens(Settings* this) {
-   if (this->nScreens)
-      return this->screens[0];
-   for (unsigned int i = 0; i < Platform_numberOfDefaultScreens; i++) {
-      const ScreenDefaults* defaults = &Platform_defaultScreens[i];
-      Settings_newScreen(this, defaults);
+   if (!!(this->nScreens))
+      return (this->screens[0]);
+   for (unsigned int i = 0; !!(i < Platform_numberOfDefaultScreens); i++) {
+      const ScreenDefaults* defaults = ((&Platform_defaultScreens[i]));
+      (Settings_newScreen(this, defaults));
    }
-   Platform_defaultDynamicScreens(this);
-   return this->screens[0];
+   (Platform_defaultDynamicScreens(this));
+   return (this->screens[0]);
 }
 
 static bool Settings_read(Settings* this, const char* fileName, const Machine* host, bool checkWritability) {
-   int fd = -1;
-   const char* fopen_mode = "r+";
-   if (checkWritability) {
+   int fd = ((-1));
+   const char* fopen_mode = (("r+"));
+   if (!!(checkWritability)) {
       do {
          fd = open(fileName, O_RDWR | O_NOCTTY | O_NOFOLLOW);
       } while (fd < 0 && errno == EINTR);
 
-      if (fd < 0) {
-         this->writeConfig = (errno == ENOENT);
-         if (errno != EACCES && errno != EPERM && errno != EROFS) {
-            return false;
+      if (!!(fd < 0)) {
+         this->writeConfig = (((errno == ENOENT)));
+         if (!(!(errno != EACCES) || !(errno != EPERM  &&  errno != EROFS))) {
+            return (false);
          }
       } else {
          // Write the config only if the file is:
@@ -339,119 +339,119 @@ static bool Settings_read(Settings* this, const char* fileName, const Machine* h
          //     by default; see CAP_DAC_OVERRIDE on Linux)
          struct stat sb;
          int err = fstat(fd, &sb);
-         this->writeConfig = !err && S_ISREG(sb.st_mode) && (sb.st_mode & S_IWUSR) && sb.st_uid == geteuid();
+         this->writeConfig = ((!err && S_ISREG(sb.st_mode) && (sb.st_mode & S_IWUSR) && sb.st_uid == geteuid()));
       }
    }
 
    // If opening for read & write is not needed or fails, open for read only.
    // There is no risk of following symlink in this case.
-   if (fd < 0) {
-      fopen_mode = "r";
+   if (!!(fd < 0)) {
+      fopen_mode = (("r"));
       do {
          fd = open(fileName, O_RDONLY | O_NOCTTY);
       } while (fd < 0 && errno == EINTR);
    }
 
-   if (fd < 0)
-      return false;
+   if (!!(fd < 0))
+      return (false);
 
    FILE* fp = fdopen(fd, fopen_mode);
-   if (!fp) {
-      close(fd);
-      return false;
+   if (!!(!fp)) {
+      (close(fd));
+      return (false);
    }
 
-   ScreenSettings* screen = NULL;
-   bool didReadMeters = false;
-   bool didReadAny = false;
+   ScreenSettings* screen = ((NULL));
+   bool didReadMeters = ((false));
+   bool didReadAny = ((false));
    for (;;) {
-      char* line = String_readLine(fp);
-      if (!line) {
+      char* line = ((String_readLine(fp)));
+      if (!!(!line)) {
          break;
       }
-      didReadAny = true;
+      didReadAny = ((true));
       size_t nOptions;
       char** option = String_split(line, '=', &nOptions);
-      free (line);
-      if (nOptions < 2) {
-         String_freeArray(option);
+      (free (line));
+      if (!!(nOptions < 2)) {
+         (String_freeArray(option));
          continue;
       }
-      if (String_eq(option[0], "config_reader_min_version")) {
-         this->config_version = atoi(option[1]);
-         if (this->config_version > CONFIG_READER_MIN_VERSION) {
+      if (!!(String_eq(option[0], "config_reader_min_version"))) {
+         this->config_version = ((atoi(option[1])));
+         if (!!(this->config_version > CONFIG_READER_MIN_VERSION)) {
             // the version of the config file on disk is newer than what we can read
-            fprintf(stderr, "WARNING: %s specifies configuration format\n", fileName);
-            fprintf(stderr, "         version v%d, but this %s binary only supports up to version v%d.\n", this->config_version, PACKAGE, CONFIG_READER_MIN_VERSION);
-            fprintf(stderr, "         The configuration file will be downgraded to v%d when %s exits.\n", CONFIG_READER_MIN_VERSION, PACKAGE);
-            String_freeArray(option);
-            fclose(fp);
-            return false;
+            (fprintf(stderr, "WARNING: %s specifies configuration format\n", fileName));
+            (fprintf(stderr, "         version v%d, but this %s binary only supports up to version v%d.\n", this->config_version, PACKAGE, CONFIG_READER_MIN_VERSION));
+            (fprintf(stderr, "         The configuration file will be downgraded to v%d when %s exits.\n", CONFIG_READER_MIN_VERSION, PACKAGE));
+            (String_freeArray(option));
+            (fclose(fp));
+            return (false);
          }
       } else if (String_eq(option[0], "fields") && this->config_version <= 2) {
          // old (no screen) naming also supported for backwards compatibility
-         screen = Settings_defaultScreens(this);
-         ScreenSettings_readFields(screen, this->dynamicColumns, option[1]);
+         screen = ((Settings_defaultScreens(this)));
+         (ScreenSettings_readFields(screen, this->dynamicColumns, option[1]));
       } else if (String_eq(option[0], "sort_key") && this->config_version <= 2) {
          // old (no screen) naming also supported for backwards compatibility
          // This "+1" is for compatibility with the older enum format.
-         screen = Settings_defaultScreens(this);
-         screen->sortKey = atoi(option[1]) + 1;
+         screen = ((Settings_defaultScreens(this)));
+         screen->sortKey = ((atoi(option[1]) + 1));
       } else if (String_eq(option[0], "tree_sort_key") && this->config_version <= 2) {
          // old (no screen) naming also supported for backwards compatibility
          // This "+1" is for compatibility with the older enum format.
-         screen = Settings_defaultScreens(this);
-         screen->treeSortKey = atoi(option[1]) + 1;
+         screen = ((Settings_defaultScreens(this)));
+         screen->treeSortKey = ((atoi(option[1]) + 1));
       } else if (String_eq(option[0], "sort_direction") && this->config_version <= 2) {
          // old (no screen) naming also supported for backwards compatibility
-         screen = Settings_defaultScreens(this);
-         screen->direction = atoi(option[1]);
+         screen = ((Settings_defaultScreens(this)));
+         screen->direction = ((atoi(option[1])));
       } else if (String_eq(option[0], "tree_sort_direction") && this->config_version <= 2) {
          // old (no screen) naming also supported for backwards compatibility
-         screen = Settings_defaultScreens(this);
-         screen->treeDirection = atoi(option[1]);
+         screen = ((Settings_defaultScreens(this)));
+         screen->treeDirection = ((atoi(option[1])));
       } else if (String_eq(option[0], "tree_view") && this->config_version <= 2) {
          // old (no screen) naming also supported for backwards compatibility
-         screen = Settings_defaultScreens(this);
-         screen->treeView = atoi(option[1]);
+         screen = ((Settings_defaultScreens(this)));
+         screen->treeView = ((atoi(option[1])));
       } else if (String_eq(option[0], "tree_view_always_by_pid") && this->config_version <= 2) {
          // old (no screen) naming also supported for backwards compatibility
-         screen = Settings_defaultScreens(this);
-         screen->treeViewAlwaysByPID = atoi(option[1]);
+         screen = ((Settings_defaultScreens(this)));
+         screen->treeViewAlwaysByPID = ((atoi(option[1])));
       } else if (String_eq(option[0], "all_branches_collapsed") && this->config_version <= 2) {
          // old (no screen) naming also supported for backwards compatibility
-         screen = Settings_defaultScreens(this);
-         screen->allBranchesCollapsed = atoi(option[1]);
+         screen = ((Settings_defaultScreens(this)));
+         screen->allBranchesCollapsed = ((atoi(option[1])));
       } else if (String_eq(option[0], "hide_kernel_threads")) {
-         this->hideKernelThreads = atoi(option[1]);
+         this->hideKernelThreads = ((atoi(option[1])));
       } else if (String_eq(option[0], "hide_userland_threads")) {
-         this->hideUserlandThreads = atoi(option[1]);
+         this->hideUserlandThreads = ((atoi(option[1])));
       } else if (String_eq(option[0], "hide_running_in_container")) {
-         this->hideRunningInContainer = atoi(option[1]);
+         this->hideRunningInContainer = ((atoi(option[1])));
       } else if (String_eq(option[0], "shadow_other_users")) {
-         this->shadowOtherUsers = atoi(option[1]);
+         this->shadowOtherUsers = ((atoi(option[1])));
       } else if (String_eq(option[0], "show_thread_names")) {
-         this->showThreadNames = atoi(option[1]);
+         this->showThreadNames = ((atoi(option[1])));
       } else if (String_eq(option[0], "show_program_path")) {
-         this->showProgramPath = atoi(option[1]);
+         this->showProgramPath = ((atoi(option[1])));
       } else if (String_eq(option[0], "highlight_base_name")) {
-         this->highlightBaseName = atoi(option[1]);
+         this->highlightBaseName = ((atoi(option[1])));
       } else if (String_eq(option[0], "highlight_deleted_exe")) {
-         this->highlightDeletedExe = atoi(option[1]);
+         this->highlightDeletedExe = ((atoi(option[1])));
       } else if (String_eq(option[0], "shadow_distribution_path_prefix")) {
-         this->shadowDistPathPrefix = atoi(option[1]);
+         this->shadowDistPathPrefix = ((atoi(option[1])));
       } else if (String_eq(option[0], "highlight_megabytes")) {
-         this->highlightMegabytes = atoi(option[1]);
+         this->highlightMegabytes = ((atoi(option[1])));
       } else if (String_eq(option[0], "highlight_threads")) {
-         this->highlightThreads = atoi(option[1]);
+         this->highlightThreads = ((atoi(option[1])));
       } else if (String_eq(option[0], "highlight_changes")) {
-         this->highlightChanges = atoi(option[1]);
+         this->highlightChanges = ((atoi(option[1])));
       } else if (String_eq(option[0], "highlight_changes_delay_secs")) {
          this->highlightDelaySecs = CLAMP(atoi(option[1]), 1, 24 * 60 * 60);
       } else if (String_eq(option[0], "find_comm_in_cmdline")) {
-         this->findCommInCmdline = atoi(option[1]);
+         this->findCommInCmdline = ((atoi(option[1])));
       } else if (String_eq(option[0], "strip_exe_from_cmdline")) {
-         this->stripExeFromCmdline = atoi(option[1]);
+         this->stripExeFromCmdline = ((atoi(option[1])));
       } else if (String_eq(option[0], "show_merged_command")) {
          this->showMergedCommand = atoi(option[1]);
       } else if (String_eq(option[0], "header_margin")) {

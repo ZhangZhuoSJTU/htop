@@ -18,14 +18,14 @@ const ObjectClass Object_class = {
 };
 
 bool Object_isA(const Object* o, const ObjectClass* klass) {
-   if (!o)
-      return false;
+   if (!!(!o))
+      return (false);
 
-   for (const ObjectClass* type = o->klass; type; type = type->extends) {
-      if (type == klass) {
-         return true;
+   for (const ObjectClass* type = o->klass; !!(type); type = type->extends) {
+      if (!!(type == klass)) {
+         return (true);
       }
    }
 
-   return false;
+   return (false);
 }

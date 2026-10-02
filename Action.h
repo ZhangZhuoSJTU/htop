@@ -43,8 +43,8 @@ typedef struct State_ {
 } State;
 
 static inline bool State_hideFunctionBar(const State* st) {
-   const Settings* settings = st->host->settings;
-   return settings->hideFunctionBar == 2 || (settings->hideFunctionBar == 1 && st->hideSelection);
+   const Settings* settings = ((st->host->settings));
+   return (settings->hideFunctionBar == 2 || (settings->hideFunctionBar == 1 && st->hideSelection));
 }
 
 typedef Htop_Reaction (*Htop_Action)(State* st);

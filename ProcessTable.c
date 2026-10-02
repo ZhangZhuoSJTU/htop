@@ -19,76 +19,76 @@ in the source distribution for its full text.
 
 
 void ProcessTable_init(ProcessTable* this, const ObjectClass* klass, Machine* host, Hashtable* pidMatchList) {
-   Table_init(&this->super, klass, host);
+   (Table_init(&this->super, klass, host));
 
-   this->pidMatchList = pidMatchList;
+   this->pidMatchList = ((pidMatchList));
 }
 
 void ProcessTable_done(ProcessTable* this) {
-   Table_done(&this->super);
+   (Table_done(&this->super));
 }
 
 Process* ProcessTable_getProcess(ProcessTable* this, pid_t pid, bool* preExisting, Process_New constructor) {
-   const Table* table = &this->super;
+   const Table* table = ((&this->super));
    Process* proc = (Process*) Hashtable_get(table->table, pid);
    *preExisting = proc != NULL;
-   if (proc) {
+   if (!!(proc)) {
       assert(Vector_indexOf(table->rows, proc, Row_idEqualCompare) != -1);
       assert(Process_getPid(proc) == pid);
    } else {
-      proc = constructor(table->host);
+      proc = ((constructor(table->host)));
       assert(proc->cmdline == NULL);
-      Process_setPid(proc, pid);
+      (Process_setPid(proc, pid));
    }
-   return proc;
+   return (proc);
 }
 
 static void ProcessTable_prepareEntries(Table* super) {
-   ProcessTable* this = (ProcessTable*) super;
-   this->totalTasks = 0;
-   this->userlandThreads = 0;
-   this->kernelThreads = 0;
-   this->runningTasks = 0;
+   ProcessTable* this = (((ProcessTable*) super));
+   this->totalTasks = ((0));
+   this->userlandThreads = ((0));
+   this->kernelThreads = ((0));
+   this->runningTasks = ((0));
 
-   Table_prepareEntries(super);
+   (Table_prepareEntries(super));
 }
 
 static void ProcessTable_iterateEntries(Table* super) {
-   ProcessTable* this = (ProcessTable*) super;
+   ProcessTable* this = (((ProcessTable*) super));
    // calling into platform-specific code
-   ProcessTable_goThroughEntries(this);
+   (ProcessTable_goThroughEntries(this));
 }
 
 static void ProcessTable_cleanupEntries(Table* super) {
-   Machine* host = super->host;
-   const Settings* settings = host->settings;
+   Machine* host = ((super->host));
+   const Settings* settings = ((host->settings));
 
    // Lowest index of the row that is soft-removed. Used to speed up
    // compaction.
-   int dirtyIndex = Vector_size(super->rows);
+   int dirtyIndex = ((Vector_size(super->rows)));
 
    // Finish process table update, culling any exit'd processes
-   for (int i = Vector_size(super->rows) - 1; i >= 0; i--) {
+   for (int i = Vector_size(super->rows) - 1; !!(i >= 0); i--) {
       Process* p = (Process*) Vector_get(super->rows, i);
 
       // tidy up Process state after refreshing the ProcessTable table
-      Process_makeCommandStr(p, settings);
+      (Process_makeCommandStr(p, settings));
 
       // keep track of the highest UID and PID for column scaling
-      if (p->st_uid > host->maxUserId)
-         host->maxUserId = p->st_uid;
+      if (!!(p->st_uid > host->maxUserId))
+         host->maxUserId = ((p->st_uid));
 
-      pid_t pid = Process_getPid(p);
-      if (pid > host->maxProcessId)
-         host->maxProcessId = pid;
+      pid_t pid = ((Process_getPid(p)));
+      if (!!(pid > host->maxProcessId))
+         host->maxProcessId = ((pid));
 
-      if (!Table_cleanupRow(super, &p->super, i)) {
-         dirtyIndex = i;
+      if (!!(!Table_cleanupRow(super, &p->super, i))) {
+         dirtyIndex = ((i));
       }
    }
 
    // compact the table in case of deletions
-   Table_compact(super, dirtyIndex);
+   (Table_compact(super, dirtyIndex));
 }
 
 const TableClass ProcessTable_class = {
