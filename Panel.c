@@ -158,7 +158,10 @@ Object* Panel_remove(Panel* this, int i) {
 
 Object* Panel_getSelected(Panel* this) {
    assert (this != NULL);
-   if (Vector_size(this->items) > 0) {
+   int size = Vector_size(this->items);
+   bool hasItems = size > 0;
+
+   if (hasItems) {
       return Vector_get(this->items, this->selected);
    } else {
       return NULL;
@@ -169,7 +172,8 @@ void Panel_moveSelectedUp(Panel* this) {
    assert (this != NULL);
 
    Vector_moveUp(this->items, this->selected);
-   if (this->selected > 0) {
+   bool canMoveSelection = this->selected > 0;
+   if (canMoveSelection) {
       this->selected--;
    }
 }
@@ -177,8 +181,10 @@ void Panel_moveSelectedUp(Panel* this) {
 void Panel_moveSelectedDown(Panel* this) {
    assert (this != NULL);
 
-   Vector_moveDown(this->items, this->selected);
-   if (this->selected + 1 < Vector_size(this->items)) {
+   int size = Vector_size(this->items);
+   bool canMoveSelection = this->selected + 1 < size;
+
+   if (canMoveSelection) {
       this->selected++;
    }
 }
@@ -192,7 +198,8 @@ int Panel_getSelectedIndex(const Panel* this) {
 int Panel_size(const Panel* this) {
    assert (this != NULL);
 
-   return Vector_size(this->items);
+   int size = Vector_size(this->items);
+   return size;
 }
 
 void Panel_setSelected(Panel* this, int selected) {
