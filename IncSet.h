@@ -39,7 +39,7 @@ typedef struct IncSet_ {
 } IncSet;
 
 static inline const char* IncSet_filter(const IncSet* this) {
-   return this->filtering ? this->modes[INC_FILTER].buffer : NULL;
+   return (this->filtering ? this->modes[INC_FILTER].buffer : NULL);
 }
 
 void IncSet_setFilter(IncSet* this, const char* filter);

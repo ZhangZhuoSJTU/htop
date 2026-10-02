@@ -40,13 +40,13 @@ void ProcessTable_done(ProcessTable* this);
 extern const TableClass ProcessTable_class;
 
 static inline void ProcessTable_add(ProcessTable* this, Process* process) {
-   Table_add(&this->super, &process->super);
+   (Table_add(&this->super, &process->super));
 }
 
 Process* ProcessTable_getProcess(ProcessTable* this, pid_t pid, bool* preExisting, Process_New constructor);
 
 static inline Process* ProcessTable_findProcess(ProcessTable* this, pid_t pid) {
-   return (Process*) Table_findRow(&this->super, pid);
+   return ((Process*) Table_findRow(&this->super, pid));
 }
 
 #endif

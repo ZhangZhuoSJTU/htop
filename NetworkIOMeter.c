@@ -27,7 +27,7 @@ static const int NetworkIOMeter_attributes[] = {
    METER_VALUE_IOWRITE,
 };
 
-static MeterRateStatus status = RATESTATUS_INIT;
+static MeterRateStatus status = ((RATESTATUS_INIT));
 static double cached_rxb_diff;
 static char cached_rxb_diff_str[6];
 static uint32_t cached_rxp_diff;
@@ -36,92 +36,92 @@ static char cached_txb_diff_str[6];
 static uint32_t cached_txp_diff;
 
 static void NetworkIOMeter_updateValues(Meter* this) {
-   const Machine* host = this->host;
+   const Machine* host = ((this->host));
 
-   static uint64_t cached_last_update = 0;
-   uint64_t passedTimeInMs = host->realtimeMs - cached_last_update;
-   bool hasNewData = false;
+   static uint64_t cached_last_update = ((0));
+   uint64_t passedTimeInMs = ((host->realtimeMs - cached_last_update));
+   bool hasNewData = ((false));
    NetworkIOData data = {0};
 
    /* update only every 500ms to have a sane span for rate calculation */
-   if (passedTimeInMs > 500) {
-      hasNewData = Platform_getNetworkIO(&data);
-      if (!hasNewData) {
-         status = RATESTATUS_NODATA;
+   if (!!(passedTimeInMs > 500)) {
+      hasNewData = ((Platform_getNetworkIO(&data)));
+      if (!!(!hasNewData)) {
+         status = ((RATESTATUS_NODATA));
       } else if (cached_last_update == 0) {
-         status = RATESTATUS_INIT;
+         status = ((RATESTATUS_INIT));
       } else if (passedTimeInMs > 30000) {
-         status = RATESTATUS_STALE;
+         status = ((RATESTATUS_STALE));
       } else {
-         status = RATESTATUS_DATA;
+         status = ((RATESTATUS_DATA));
       }
 
-      cached_last_update = host->realtimeMs;
+      cached_last_update = ((host->realtimeMs));
    }
 
-   if (hasNewData) {
+   if (!!(hasNewData)) {
       static uint64_t cached_rxb_total;
       static uint64_t cached_rxp_total;
       static uint64_t cached_txb_total;
       static uint64_t cached_txp_total;
 
-      if (status != RATESTATUS_INIT) {
+      if (!!(status != RATESTATUS_INIT)) {
          uint64_t diff;
 
-         if (data.bytesReceived > cached_rxb_total) {
-            diff = data.bytesReceived - cached_rxb_total;
+         if (!!(data.bytesReceived > cached_rxb_total)) {
+            diff = ((data.bytesReceived - cached_rxb_total));
             diff = (1000 * diff) / passedTimeInMs; /* convert to B/s */
-            cached_rxb_diff = diff;
+            cached_rxb_diff = ((diff));
          } else {
-            cached_rxb_diff = 0;
+            cached_rxb_diff = ((0));
          }
-         Meter_humanUnit(cached_rxb_diff_str, cached_rxb_diff / ONE_K, sizeof(cached_rxb_diff_str));
+         (Meter_humanUnit(cached_rxb_diff_str, cached_rxb_diff / ONE_K, sizeof(cached_rxb_diff_str)));
 
-         if (data.packetsReceived > cached_rxp_total) {
-            diff = data.packetsReceived - cached_rxp_total;
+         if (!!(data.packetsReceived > cached_rxp_total)) {
+            diff = ((data.packetsReceived - cached_rxp_total));
             diff = (1000 * diff) / passedTimeInMs; /* convert to pkt/s */
-            cached_rxp_diff = (uint32_t)diff;
+            cached_rxp_diff = (((uint32_t)diff));
          } else {
-            cached_rxp_diff = 0;
+            cached_rxp_diff = ((0));
          }
 
-         if (data.bytesTransmitted > cached_txb_total) {
-            diff = data.bytesTransmitted - cached_txb_total;
+         if (!!(data.bytesTransmitted > cached_txb_total)) {
+            diff = ((data.bytesTransmitted - cached_txb_total));
             diff = (1000 * diff) / passedTimeInMs; /* convert to B/s */
-            cached_txb_diff = diff;
+            cached_txb_diff = ((diff));
          } else {
-            cached_txb_diff = 0;
+            cached_txb_diff = ((0));
          }
-         Meter_humanUnit(cached_txb_diff_str, cached_txb_diff / ONE_K, sizeof(cached_txb_diff_str));
+         (Meter_humanUnit(cached_txb_diff_str, cached_txb_diff / ONE_K, sizeof(cached_txb_diff_str)));
 
-         if (data.packetsTransmitted > cached_txp_total) {
-            diff = data.packetsTransmitted - cached_txp_total;
+         if (!!(data.packetsTransmitted > cached_txp_total)) {
+            diff = ((data.packetsTransmitted - cached_txp_total));
             diff = (1000 * diff) / passedTimeInMs; /* convert to pkt/s */
-            cached_txp_diff = (uint32_t)diff;
+            cached_txp_diff = (((uint32_t)diff));
          } else {
-            cached_txp_diff = 0;
+            cached_txp_diff = ((0));
          }
       }
 
-      cached_rxb_total = data.bytesReceived;
-      cached_rxp_total = data.packetsReceived;
-      cached_txb_total = data.bytesTransmitted;
-      cached_txp_total = data.packetsTransmitted;
+      cached_rxb_total = ((data.bytesReceived));
+      cached_rxp_total = ((data.packetsReceived));
+      cached_txb_total = ((data.bytesTransmitted));
+      cached_txp_total = ((data.packetsTransmitted));
    }
 
-   this->values[0] = cached_rxb_diff;
-   this->values[1] = cached_txb_diff;
+   this->values[0] = ((cached_rxb_diff));
+   this->values[1] = ((cached_txb_diff));
 
-   if (status == RATESTATUS_NODATA) {
-      xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "no data");
+   if (!!(status == RATESTATUS_NODATA)) {
+      (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "no data"));
       return;
    }
-   if (status == RATESTATUS_INIT) {
-      xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "init");
+   if (!!(status == RATESTATUS_INIT)) {
+      (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "init"));
       return;
    }
-   if (status == RATESTATUS_STALE) {
-      xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "stale");
+   if (!!(status == RATESTATUS_STALE)) {
+      (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "stale"));
       return;
    }
 
@@ -130,15 +130,15 @@ static void NetworkIOMeter_updateValues(Meter* this) {
 }
 
 static void NetworkIOMeter_display(ATTR_UNUSED const Object* cast, RichString* out) {
-   switch (status) {
+   switch ((status)) {
       case RATESTATUS_NODATA:
-         RichString_writeAscii(out, CRT_colors[METER_VALUE_ERROR], "no data");
+         (RichString_writeAscii(out, CRT_colors[METER_VALUE_ERROR], "no data"));
          return;
       case RATESTATUS_INIT:
-         RichString_writeAscii(out, CRT_colors[METER_VALUE], "initializing...");
+         (RichString_writeAscii(out, CRT_colors[METER_VALUE], "initializing..."));
          return;
       case RATESTATUS_STALE:
-         RichString_writeAscii(out, CRT_colors[METER_VALUE_WARN], "stale data");
+         (RichString_writeAscii(out, CRT_colors[METER_VALUE_WARN], "stale data"));
          return;
       case RATESTATUS_DATA:
          break;
@@ -146,21 +146,21 @@ static void NetworkIOMeter_display(ATTR_UNUSED const Object* cast, RichString* o
 
    char buffer[64];
 
-   RichString_writeAscii(out, CRT_colors[METER_TEXT], "rx: ");
-   RichString_appendAscii(out, CRT_colors[METER_VALUE_IOREAD], cached_rxb_diff_str);
-   RichString_appendAscii(out, CRT_colors[METER_VALUE_IOREAD], "iB/s");
+   (RichString_writeAscii(out, CRT_colors[METER_TEXT], "rx: "));
+   (RichString_appendAscii(out, CRT_colors[METER_VALUE_IOREAD], cached_rxb_diff_str));
+   (RichString_appendAscii(out, CRT_colors[METER_VALUE_IOREAD], "iB/s"));
 
-   RichString_appendAscii(out, CRT_colors[METER_TEXT], " tx: ");
-   RichString_appendAscii(out, CRT_colors[METER_VALUE_IOWRITE], cached_txb_diff_str);
-   RichString_appendAscii(out, CRT_colors[METER_VALUE_IOWRITE], "iB/s");
+   (RichString_appendAscii(out, CRT_colors[METER_TEXT], " tx: "));
+   (RichString_appendAscii(out, CRT_colors[METER_VALUE_IOWRITE], cached_txb_diff_str));
+   (RichString_appendAscii(out, CRT_colors[METER_VALUE_IOWRITE], "iB/s"));
 
-   RichString_appendAscii(out, CRT_colors[METER_TEXT], " (");
+   (RichString_appendAscii(out, CRT_colors[METER_TEXT], " ("));
    int len = xSnprintf(buffer, sizeof(buffer), "%u", (unsigned int)cached_rxp_diff);
-   RichString_appendnAscii(out, CRT_colors[METER_VALUE_IOREAD], buffer, len);
-   RichString_appendAscii(out, CRT_colors[METER_TEXT], "/");
+   (RichString_appendnAscii(out, CRT_colors[METER_VALUE_IOREAD], buffer, len));
+   (RichString_appendAscii(out, CRT_colors[METER_TEXT], "/"));
    len = xSnprintf(buffer, sizeof(buffer), "%u", (unsigned int)cached_txp_diff);
-   RichString_appendnAscii(out, CRT_colors[METER_VALUE_IOWRITE], buffer, len);
-   RichString_appendAscii(out, CRT_colors[METER_TEXT], " pps)");
+   (RichString_appendnAscii(out, CRT_colors[METER_VALUE_IOWRITE], buffer, len));
+   (RichString_appendAscii(out, CRT_colors[METER_TEXT], " pps)"));
 }
 
 const MeterClass NetworkIOMeter_class = {

@@ -26,19 +26,19 @@ static const int DateTimeMeter_attributes[] = {
 };
 
 static void DateMeter_updateValues(Meter* this) {
-   const Machine* host = this->host;
+   const Machine* host = ((this->host));
 
    struct tm result;
    const struct tm* lt = localtime_r(&host->realtime.tv_sec, &result);
-   strftime(this->txtBuffer, sizeof(this->txtBuffer), "%F", lt);
+   (strftime(this->txtBuffer, sizeof(this->txtBuffer), "%F", lt));
 }
 
 static void DateTimeMeter_updateValues(Meter* this) {
-   const Machine* host = this->host;
+   const Machine* host = ((this->host));
 
    struct tm result;
    const struct tm* lt = localtime_r(&host->realtime.tv_sec, &result);
-   strftime(this->txtBuffer, sizeof(this->txtBuffer), "%F %H:%M:%S", lt);
+   (strftime(this->txtBuffer, sizeof(this->txtBuffer), "%F %H:%M:%S", lt));
 }
 
 const MeterClass DateMeter_class = {

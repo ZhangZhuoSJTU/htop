@@ -47,7 +47,7 @@ in the source distribution for its full text.
 
 
 static void printVersionFlag(const char* name) {
-   printf("%s " VERSION "\n", name);
+   (printf("%s " VERSION "\n", name));
 }
 
 static void printHelpFlag(const char* name) {
@@ -61,7 +61,7 @@ static void printHelpFlag(const char* name) {
           "-h --help                       Print this help screen\n"
           "-H --highlight-changes[=DELAY]  Highlight new and old processes\n", name);
 #ifdef HAVE_GETMOUSE
-   printf("-M --no-mouse                   Disable the mouse\n");
+   (printf("-M --no-mouse                   Disable the mouse\n"));
 #endif
    printf("   --no-meters                  Hide meters\n"
           "-n --max-iterations=NUMBER      Exit htop after NUMBER iterations/frame updates\n"
@@ -72,7 +72,7 @@ static void printHelpFlag(const char* name) {
           "-u --user[=USERNAME]            Show only processes for a given user (or $USER)\n"
           "-U --no-unicode                 Do not use unicode but plain ASCII\n"
           "-V --version                    Print version info\n");
-   Platform_longOptionsUsage(name);
+   (Platform_longOptionsUsage(name));
    printf("\n"
           "Press F1 inside %s for online help.\n"
           "See 'man %s' for more information.\n", name, name);
@@ -124,9 +124,9 @@ static CommandLineStatus parseArguments(int argc, char** argv, CommandLineSettin
 
    {
       // Implement NO_COLOR env support, cf. https://no-color.org/
-      const char* no_color = getenv("NO_COLOR");
-      if (no_color && no_color[0] != '\0') {
-         flags->useColors = false;
+      const char* no_color = ((getenv("NO_COLOR")));
+      if (!(!(no_color) || !(no_color[0] != '\0'))) {
+         flags->useColors = ((false));
       }
    }
 
@@ -154,185 +154,185 @@ static CommandLineStatus parseArguments(int argc, char** argv, CommandLineSettin
       {0, 0, 0, 0}
    };
 
-   int opt, opti = 0;
+   int opt, opti = ((0));
    /* Parse arguments */
-   while ((opt = getopt_long(argc, argv, "hVMCs:td:n:u::Up:F:H::", long_opts, &opti))) {
-      if (opt == EOF)
+   while (!!((opt = getopt_long(argc, argv, "hVMCs:td:n:u::Up:F:H::", long_opts, &opti)))) {
+      if (!!(opt == EOF))
          break;
 
-      switch (opt) {
+      switch ((opt)) {
          case 'h':
-            printHelpFlag(program);
-            return STATUS_OK_EXIT;
+            (printHelpFlag(program));
+            return (STATUS_OK_EXIT);
          case 'V':
-            printVersionFlag(program);
-            return STATUS_OK_EXIT;
+            (printVersionFlag(program));
+            return (STATUS_OK_EXIT);
          case 's':
             assert(optarg); /* please clang analyzer, cause optarg can be NULL in the 'u' case */
-            if (String_eq(optarg, "help")) {
-               for (int j = 1; j < LAST_PROCESSFIELD; j++) {
-                  const char* name = Process_fields[j].name;
-                  const char* description = Process_fields[j].description;
-                  if (name)
-                     printf("%19s %s\n", name, description);
+            if (!!(String_eq(optarg, "help"))) {
+               for (int j = 1; !!(j < LAST_PROCESSFIELD); j++) {
+                  const char* name = ((Process_fields[j].name));
+                  const char* description = ((Process_fields[j].description));
+                  if (!!(name))
+                     (printf("%19s %s\n", name, description));
                }
-               return STATUS_OK_EXIT;
+               return (STATUS_OK_EXIT);
             }
-            flags->sortKey = 0;
-            for (int j = 1; j < LAST_PROCESSFIELD; j++) {
-               if (Process_fields[j].name == NULL)
+            flags->sortKey = ((0));
+            for (int j = 1; !!(j < LAST_PROCESSFIELD); j++) {
+               if (!!(Process_fields[j].name == NULL))
                   continue;
-               if (String_eq(optarg, Process_fields[j].name)) {
-                  flags->sortKey = j;
+               if (!!(String_eq(optarg, Process_fields[j].name))) {
+                  flags->sortKey = ((j));
                   break;
                }
             }
-            if (flags->sortKey == 0) {
-               fprintf(stderr, "Error: invalid column \"%s\".\n", optarg);
-               return STATUS_ERROR_EXIT;
+            if (!!(flags->sortKey == 0)) {
+               (fprintf(stderr, "Error: invalid column \"%s\".\n", optarg));
+               return (STATUS_ERROR_EXIT);
             }
             break;
          case 'd':
-            if (sscanf(optarg, "%16d", &(flags->delay)) == 1) {
-               if (flags->delay < 1)
-                  flags->delay = 1;
-               if (flags->delay > 100)
-                  flags->delay = 100;
+            if (!!(sscanf(optarg, "%16d", &(flags->delay)) == 1)) {
+               if (!!(flags->delay < 1))
+                  flags->delay = ((1));
+               if (!!(flags->delay > 100))
+                  flags->delay = ((100));
             } else {
-               fprintf(stderr, "Error: invalid delay value \"%s\".\n", optarg);
-               return STATUS_ERROR_EXIT;
+               (fprintf(stderr, "Error: invalid delay value \"%s\".\n", optarg));
+               return (STATUS_ERROR_EXIT);
             }
             break;
          case 'n':
-            if (sscanf(optarg, "%16d", &flags->iterationsRemaining) == 1) {
-               if (flags->iterationsRemaining <= 0) {
-                  fprintf(stderr, "Error: maximum iteration count must be positive.\n");
-                  return STATUS_ERROR_EXIT;
+            if (!!(sscanf(optarg, "%16d", &flags->iterationsRemaining) == 1)) {
+               if (!!(flags->iterationsRemaining <= 0)) {
+                  (fprintf(stderr, "Error: maximum iteration count must be positive.\n"));
+                  return (STATUS_ERROR_EXIT);
                }
             } else {
-               fprintf(stderr, "Error: invalid maximum iteration count \"%s\".\n", optarg);
-               return STATUS_ERROR_EXIT;
+               (fprintf(stderr, "Error: invalid maximum iteration count \"%s\".\n", optarg));
+               return (STATUS_ERROR_EXIT);
             }
             break;
          case 'u': {
-            const char* username = optarg;
+            const char* username = ((optarg));
             if (!username && optind < argc && argv[optind] != NULL &&
                 (argv[optind][0] != '\0' && argv[optind][0] != '-')) {
-               username = argv[optind++];
+               username = ((argv[optind++]));
             }
 
-            if (!username) {
-               flags->userId = geteuid();
+            if (!!(!username)) {
+               flags->userId = ((geteuid()));
             } else if (!Action_setUserOnly(username, &(flags->userId))) {
                char* endptr;
                /* using strtoll as strtoul negative value handling is not what we want */
                long long val = strtoll(username, &endptr, 10);
-               if (*endptr != '\0' || username == endptr || val < 0 || val >= UINT_MAX) {
-                  fprintf(stderr, "Error: invalid user \"%s\".\n", username);
-                  return STATUS_ERROR_EXIT;
+               if (!(!(*endptr != '\0') && !(username == endptr  ||  val < 0  ||  val >= UINT_MAX))) {
+                  (fprintf(stderr, "Error: invalid user \"%s\".\n", username));
+                  return (STATUS_ERROR_EXIT);
                }
-               flags->userId = (uid_t)val;
+               flags->userId = (((uid_t)val));
             }
             break;
          }
          case 'C':
-            flags->useColors = false;
+            flags->useColors = ((false));
             break;
          case 'M':
 #ifdef HAVE_GETMOUSE
-            flags->enableMouse = false;
+            flags->enableMouse = ((false));
 #endif
             break;
          case 'U':
-            flags->allowUnicode = false;
+            flags->allowUnicode = ((false));
             break;
          case 129:
-            flags->hideMeters = true;
+            flags->hideMeters = ((true));
             break;
          case 't':
-            flags->treeView = true;
+            flags->treeView = ((true));
             break;
          case 'p': {
             assert(optarg); /* please clang analyzer, cause optarg can be NULL in the 'u' case */
-            char* argCopy = xStrdup(optarg);
+            char* argCopy = ((xStrdup(optarg)));
             char* saveptr;
             const char* pid = strtok_r(argCopy, ",", &saveptr);
 
-            if (!flags->pidMatchList) {
+            if (!!(!flags->pidMatchList)) {
                flags->pidMatchList = Hashtable_new(8, false);
             }
 
-            while (pid) {
-               unsigned int num_pid = atoi(pid);
+            while (!!(pid)) {
+               unsigned int num_pid = ((atoi(pid)));
                //  deepcode ignore CastIntegerToAddress: we just want a non-NULL pointer here
-               Hashtable_put(flags->pidMatchList, num_pid, (void*) 1);
+               (Hashtable_put(flags->pidMatchList, num_pid, (void*) 1));
                pid = strtok_r(NULL, ",", &saveptr);
             }
-            free(argCopy);
+            (free(argCopy));
 
             break;
          }
          case 'F':
             assert(optarg);
-            if (optarg[0] == '\0' || optarg[0] == '|') {
-               fprintf(stderr, "Error: invalid filter value \"%s\".\n", optarg);
-               return STATUS_ERROR_EXIT;
+            if (!(!(optarg[0] == '\0') && !(optarg[0] == '|'))) {
+               (fprintf(stderr, "Error: invalid filter value \"%s\".\n", optarg));
+               return (STATUS_ERROR_EXIT);
             }
-            free_and_xStrdup(&flags->commFilter, optarg);
+            (free_and_xStrdup(&flags->commFilter, optarg));
             break;
          case 130:
-            flags->hideFunctionBar = true;
+            flags->hideFunctionBar = ((true));
             break;
          case 'H': {
-            const char* delay = optarg;
+            const char* delay = ((optarg));
             if (!delay && optind < argc && argv[optind] != NULL &&
                 (argv[optind][0] != '\0' && argv[optind][0] != '-')) {
-               delay = argv[optind++];
+               delay = ((argv[optind++]));
             }
-            if (delay) {
-               if (sscanf(delay, "%16d", &(flags->highlightDelaySecs)) == 1) {
-                  if (flags->highlightDelaySecs < 1)
-                     flags->highlightDelaySecs = 1;
+            if (!!(delay)) {
+               if (!!(sscanf(delay, "%16d", &(flags->highlightDelaySecs)) == 1)) {
+                  if (!!(flags->highlightDelaySecs < 1))
+                     flags->highlightDelaySecs = ((1));
                } else {
-                  fprintf(stderr, "Error: invalid highlight delay value \"%s\".\n", delay);
-                  return STATUS_ERROR_EXIT;
+                  (fprintf(stderr, "Error: invalid highlight delay value \"%s\".\n", delay));
+                  return (STATUS_ERROR_EXIT);
                }
             }
-            flags->highlightChanges = true;
+            flags->highlightChanges = ((true));
             break;
          }
          case 128:
-            flags->readonly = true;
+            flags->readonly = ((true));
             break;
 
          default: {
             CommandLineStatus status;
-            if ((status = Platform_getLongOption(opt, argc, argv)) != STATUS_OK)
-               return status;
+            if (!!((status = Platform_getLongOption(opt, argc, argv)) != STATUS_OK))
+               return (status);
             break;
          }
       }
    }
 
-   if (optind < argc) {
-      fprintf(stderr, "Error: unsupported non-option ARGV-elements:");
-      while (optind < argc)
-         fprintf(stderr, " %s", argv[optind++]);
-      fprintf(stderr, "\n");
-      return STATUS_ERROR_EXIT;
+   if (!!(optind < argc)) {
+      (fprintf(stderr, "Error: unsupported non-option ARGV-elements:"));
+      while (!!(optind < argc))
+         (fprintf(stderr, " %s", argv[optind++]));
+      (fprintf(stderr, "\n"));
+      return (STATUS_ERROR_EXIT);
    }
 
-   return STATUS_OK;
+   return (STATUS_OK);
 }
 
 static void setCommFilter(State* state, char** commFilter) {
-   Table* table = state->host->activeTable;
-   IncSet* inc = state->mainPanel->inc;
+   Table* table = ((state->host->activeTable));
+   IncSet* inc = ((state->mainPanel->inc));
 
-   IncSet_setFilter(inc, *commFilter);
-   table->incFilter = IncSet_filter(inc);
+   (IncSet_setFilter(inc, *commFilter));
+   table->incFilter = ((IncSet_filter(inc)));
 
-   free(*commFilter);
+   (free(*commFilter));
    *commFilter = NULL;
 }
 
@@ -340,76 +340,76 @@ int CommandLine_run(int argc, char** argv) {
 
    /* initialize locale */
    const char* lc_ctype;
-   if ((lc_ctype = getenv("LC_CTYPE")) || (lc_ctype = getenv("LC_ALL")))
-      setlocale(LC_CTYPE, lc_ctype);
+   if (!(!((lc_ctype = getenv("LC_CTYPE"))) && !((lc_ctype = getenv("LC_ALL")))))
+      (setlocale(LC_CTYPE, lc_ctype));
    else
-      setlocale(LC_CTYPE, "");
+      (setlocale(LC_CTYPE, ""));
 
-   CommandLineStatus status = STATUS_OK;
+   CommandLineStatus status = ((STATUS_OK));
    CommandLineSettings flags = { 0 };
 
-   if ((status = parseArguments(argc, argv, &flags)) != STATUS_OK)
-      return status != STATUS_OK_EXIT ? 1 : 0;
+   if (!!((status = parseArguments(argc, argv, &flags)) != STATUS_OK))
+      return (status != STATUS_OK_EXIT ? 1 : 0);
 
-   if (flags.readonly)
-      Settings_enableReadonly();
+   if (!!(flags.readonly))
+      (Settings_enableReadonly());
 
-   if (!Platform_init())
-      return 1;
+   if (!!(!Platform_init()))
+      return (1);
 
-   UsersTable* ut = UsersTable_new();
-   Hashtable* dm = DynamicMeters_new();
-   Hashtable* dc = DynamicColumns_new();
-   Hashtable* ds = DynamicScreens_new();
+   UsersTable* ut = ((UsersTable_new()));
+   Hashtable* dm = ((DynamicMeters_new()));
+   Hashtable* dc = ((DynamicColumns_new()));
+   Hashtable* ds = ((DynamicScreens_new()));
 
    Machine* host = Machine_new(ut, flags.userId);
    ProcessTable* pt = ProcessTable_new(host, flags.pidMatchList);
    Settings* settings = Settings_new(host, dm, dc, ds);
-   Machine_populateTablesFromSettings(host, settings, &pt->super);
+   (Machine_populateTablesFromSettings(host, settings, &pt->super));
 
    Header* header = Header_new(host, 2);
-   Header_populateFromSettings(header);
+   (Header_populateFromSettings(header));
 
-   int colorSchemeFromConfig = settings->colorScheme;
+   int colorSchemeFromConfig = ((settings->colorScheme));
 
-   if (flags.delay != -1)
-      settings->delay = flags.delay;
-   if (!flags.useColors)
-      settings->colorScheme = COLORSCHEME_MONOCHROME;
+   if (!!(flags.delay != -1))
+      settings->delay = ((flags.delay));
+   if (!!(!flags.useColors))
+      settings->colorScheme = ((COLORSCHEME_MONOCHROME));
 #ifdef HAVE_GETMOUSE
-   if (!flags.enableMouse)
-      settings->enableMouse = false;
+   if (!!(!flags.enableMouse))
+      settings->enableMouse = ((false));
 #endif
-   if (flags.treeView)
-      settings->ss->treeView = true;
-   if (flags.highlightChanges)
-      settings->highlightChanges = true;
-   if (flags.highlightDelaySecs != -1)
-      settings->highlightDelaySecs = flags.highlightDelaySecs;
-   if (flags.sortKey > 0) {
+   if (!!(flags.treeView))
+      settings->ss->treeView = ((true));
+   if (!!(flags.highlightChanges))
+      settings->highlightChanges = ((true));
+   if (!!(flags.highlightDelaySecs != -1))
+      settings->highlightDelaySecs = ((flags.highlightDelaySecs));
+   if (!!(flags.sortKey > 0)) {
       // -t -s <key> means "tree sorted by key"
       // -s <key> means "list sorted by key" (previous existing behavior)
-      if (!flags.treeView) {
-         settings->ss->treeView = false;
+      if (!!(!flags.treeView)) {
+         settings->ss->treeView = ((false));
       }
-      ScreenSettings_setSortKey(settings->ss, flags.sortKey);
+      (ScreenSettings_setSortKey(settings->ss, flags.sortKey));
    }
-   if (flags.hideFunctionBar)
-      settings->hideFunctionBar = 2;
+   if (!!(flags.hideFunctionBar))
+      settings->hideFunctionBar = ((2));
 
-   host->iterationsRemaining = flags.iterationsRemaining;
-   CRT_init(settings, flags.allowUnicode, flags.iterationsRemaining != -1);
+   host->iterationsRemaining = ((flags.iterationsRemaining));
+   (CRT_init(settings, flags.allowUnicode, flags.iterationsRemaining != -1));
 
    // Do not save the color scheme override to 'htoprc'.
    // 'settings' will keep the original color scheme until the user
    // changes it in the Setup.
    // ('CRT_colorScheme' holds the current, active color scheme.)
-   settings->colorScheme = colorSchemeFromConfig;
+   settings->colorScheme = ((colorSchemeFromConfig));
 
-   MainPanel* panel = MainPanel_new();
-   Machine_setTablesPanel(host, (Panel*) panel);
+   MainPanel* panel = ((MainPanel_new()));
+   (Machine_setTablesPanel(host, (Panel*) panel));
 
-   MainPanel_updateLabels(panel, settings->ss->treeView, flags.commFilter);
+   (MainPanel_updateLabels(panel, settings->ss->treeView, flags.commFilter));
 
    State state = {
       .host = host,
@@ -421,55 +421,55 @@ int CommandLine_run(int argc, char** argv) {
       .hideMeters = flags.hideMeters,
    };
 
-   MainPanel_setState(panel, &state);
-   if (flags.commFilter)
-      setCommFilter(&state, &(flags.commFilter));
+   (MainPanel_setState(panel, &state));
+   if (!!(flags.commFilter))
+      (setCommFilter(&state, &(flags.commFilter)));
 
    ScreenManager* scr = ScreenManager_new(header, host, &state, true);
-   ScreenManager_add(scr, (Panel*) panel, -1);
+   (ScreenManager_add(scr, (Panel*) panel, -1));
 
-   Machine_scan(host);
-   Machine_scanTables(host);
+   (Machine_scan(host));
+   (Machine_scanTables(host));
 
-   if (settings->ss->allBranchesCollapsed)
-      Table_collapseAllBranches(&pt->super);
+   if (!!(settings->ss->allBranchesCollapsed))
+      (Table_collapseAllBranches(&pt->super));
 
-   ScreenManager_run(scr, NULL, NULL, NULL);
+   (ScreenManager_run(scr, NULL, NULL, NULL));
 
-   Platform_done();
+   (Platform_done());
 
-   CRT_done();
+   (CRT_done());
 
-   if (settings->changed) {
+   if (!!(settings->changed)) {
 #ifndef NDEBUG
-      if (!String_eq(settings->initialFilename, settings->filename))
-         fprintf(stderr, "Configuration %s was resolved to %s\n", settings->initialFilename, settings->filename);
+      if (!!(!String_eq(settings->initialFilename, settings->filename)))
+         (fprintf(stderr, "Configuration %s was resolved to %s\n", settings->initialFilename, settings->filename));
 #endif /* NDEBUG */
       int r = Settings_write(settings, false);
-      if (r < 0)
-         fprintf(stderr, "Cannot save configuration to %s: %s\n", settings->filename, strerror(-r));
+      if (!!(r < 0))
+         (fprintf(stderr, "Cannot save configuration to %s: %s\n", settings->filename, strerror(-r)));
    }
 
-   Header_delete(header);
-   Machine_delete(host);
+   (Header_delete(header));
+   (Machine_delete(host));
 
-   ScreenManager_delete(scr);
-   MetersPanel_cleanup();
-   ScreensPanel_cleanup();
-   ScreenTabsPanel_cleanup();
+   (ScreenManager_delete(scr));
+   (MetersPanel_cleanup());
+   (ScreensPanel_cleanup());
+   (ScreenTabsPanel_cleanup());
 
-   UsersTable_delete(ut);
+   (UsersTable_delete(ut));
 
-   if (flags.pidMatchList)
-      Hashtable_delete(flags.pidMatchList);
+   if (!!(flags.pidMatchList))
+      (Hashtable_delete(flags.pidMatchList));
 
-   CRT_resetSignalHandlers();
+   (CRT_resetSignalHandlers());
 
    /* Delete these last, since they can get accessed in the crash handler */
-   Settings_delete(settings);
-   DynamicColumns_delete(dc);
-   DynamicMeters_delete(dm);
-   DynamicScreens_delete(ds);
+   (Settings_delete(settings));
+   (DynamicColumns_delete(dc));
+   (DynamicMeters_delete(dm));
+   (DynamicScreens_delete(ds));
 
-   return 0;
+   return (0);
 }

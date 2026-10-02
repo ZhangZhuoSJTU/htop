@@ -252,43 +252,43 @@ typedef struct ProcessClass_ {
 
 
 static inline void Process_setPid(Process* this, pid_t pid) {
-   this->super.id = pid;
+   this->super.id = ((pid));
 }
 
 static inline pid_t Process_getPid(const Process* this) {
-   return (pid_t)this->super.id;
+   return ((pid_t)this->super.id);
 }
 
 static inline void Process_setThreadGroup(Process* this, pid_t pid) {
-   this->super.group = pid;
+   this->super.group = ((pid));
 }
 
 static inline pid_t Process_getThreadGroup(const Process* this) {
-   return (pid_t)this->super.group;
+   return ((pid_t)this->super.group);
 }
 
 static inline void Process_setParent(Process* this, pid_t pid) {
-   this->super.parent = pid;
+   this->super.parent = ((pid));
 }
 
 static inline pid_t Process_getParent(const Process* this) {
-   return (pid_t)this->super.parent;
+   return ((pid_t)this->super.parent);
 }
 
 static inline pid_t Process_getGroupOrParent(const Process* this) {
-   return Row_getGroupOrParent(&this->super);
+   return (Row_getGroupOrParent(&this->super));
 }
 
 static inline bool Process_isKernelThread(const Process* this) {
-   return this->isKernelThread;
+   return (this->isKernelThread);
 }
 
 static inline bool Process_isUserlandThread(const Process* this) {
-   return this->isUserlandThread;
+   return (this->isUserlandThread);
 }
 
 static inline bool Process_isThread(const Process* this) {
-   return Process_isUserlandThread(this) || Process_isKernelThread(this);
+   return (Process_isUserlandThread(this) || Process_isKernelThread(this));
 }
 
 #define CMDLINE_HIGHLIGHT_FLAG_SEPARATOR  0x00000001
@@ -318,7 +318,7 @@ bool Process_rowIsVisible(const Row* super, const struct Table_* table);
 bool Process_rowMatchesFilter(const Row* super, const struct Table_* table);
 
 static inline int Process_pidEqualCompare(const void* v1, const void* v2) {
-   return Row_idEqualCompare(v1, v2);
+   return (Row_idEqualCompare(v1, v2));
 }
 
 int Process_compareByKey_Base(const Process* p1, const Process* p2, ProcessField key);

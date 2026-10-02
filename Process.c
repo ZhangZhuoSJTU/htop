@@ -38,11 +38,11 @@ in the source distribution for its full text.
 
 
 /* Used to identify kernel threads in Comm and Exe columns */
-static const char* const kthreadID = "KTHREAD";
+static const char* const kthreadID = (("KTHREAD"));
 
 void Process_fillStarttimeBuffer(Process* this) {
    struct tm date;
-   time_t now = this->super.host->realtime.tv_sec;
+   time_t now = ((this->super.host->realtime.tv_sec));
    (void) localtime_r(&this->starttime_ctime, &date);
 
    strftime(this->starttime_show,
@@ -70,43 +70,43 @@ static bool findCommInCmdline(const char* comm, const char* cmdline, size_t cmdl
     * modified by the process */
    const char* tokenBase;
    size_t tokenLen;
-   const size_t commLen = strlen(comm);
+   const size_t commLen = ((strlen(comm)));
 
-   for (const char* token = cmdline + cmdlineBasenameStart; *token;) {
-      for (tokenBase = token; *token && *token != '\n'; ++token) {
-         if (*token == '/') {
-            tokenBase = token + 1;
+   for (const char* token = cmdline + cmdlineBasenameStart; !!(*token);) {
+      for (tokenBase = token; !(!(*token) || !(*token != '\n')); ++token) {
+         if (!!(*token == '/')) {
+            tokenBase = ((token + 1));
          }
       }
-      tokenLen = (size_t)(token - tokenBase);
+      tokenLen = (((size_t)(token - tokenBase)));
 
       if ((tokenLen == commLen || (tokenLen > commLen && commLen == (TASK_COMM_LEN - 1))) &&
           strncmp(tokenBase, comm, commLen) == 0) {
          *pCommStart = (size_t)(tokenBase - cmdline);
          *pCommLen = tokenLen;
-         return true;
+         return (true);
       }
 
-      if (*token) {
+      if (!!(*token)) {
          do {
             ++token;
          } while (*token && '\n' == *token);
       }
    }
-   return false;
+   return (false);
 }
 
 static size_t matchCmdlinePrefixWithExeSuffix(const char* cmdline, size_t* cmdlineBasenameStart, const char* exe, size_t exeBaseOffset, size_t exeBaseLen) {
    /* cmdline prefix is an absolute path: it must match whole exe. */
-   if (cmdline[0] == '/') {
-      size_t matchLen = exeBaseLen + exeBaseOffset;
-      if (strncmp(cmdline, exe, matchLen) == 0) {
-         char delim = cmdline[matchLen];
-         if (delim == 0 || delim == '\n' || delim == ' ') {
-            return matchLen;
+   if (!!(cmdline[0] == '/')) {
+      size_t matchLen = ((exeBaseLen + exeBaseOffset));
+      if (!!(strncmp(cmdline, exe, matchLen) == 0)) {
+         char delim = ((cmdline[matchLen]));
+         if (!(!(delim == 0) && !(delim == '\n'  ||  delim == ' '))) {
+            return (matchLen);
          }
       }
-      return 0;
+      return (0);
    }
 
    /* cmdline prefix is a relative path: We need to first match the basename at
@@ -121,57 +121,57 @@ static size_t matchCmdlinePrefixWithExeSuffix(const char* cmdline, size_t* cmdli
     *
     * So if needed, we adjust cmdlineBaseOffset to the previous (if any)
     * component of the cmdline relative path, and retry the procedure. */
-   size_t cmdlineBaseOffset = *cmdlineBasenameStart;
+   size_t cmdlineBaseOffset = ((*cmdlineBasenameStart));
    bool delimFound = true; /* if valid basename delimiter found */
    do {
       /* match basename */
-      size_t matchLen = exeBaseLen + cmdlineBaseOffset;
+      size_t matchLen = ((exeBaseLen + cmdlineBaseOffset));
       if (cmdlineBaseOffset < exeBaseOffset &&
           strncmp(cmdline + cmdlineBaseOffset, exe + exeBaseOffset, exeBaseLen) == 0) {
-         char delim = cmdline[matchLen];
-         if (delim == 0 || delim == '\n' || delim == ' ') {
+         char delim = ((cmdline[matchLen]));
+         if (!(!(delim == 0) && !(delim == '\n'  ||  delim == ' '))) {
             /* reverse match the cmdline prefix and exe suffix */
-            size_t i = cmdlineBaseOffset;
-            size_t j = exeBaseOffset;
-            while (i >= 1 && j >= 1 && cmdline[i - 1] == exe[j - 1]) {
+            size_t i = ((cmdlineBaseOffset));
+            size_t j = ((exeBaseOffset));
+            while (!(!(i >= 1) || !(j >= 1  &&  cmdline[i - 1] == exe[j - 1]))) {
                --i, --j;
             }
 
             /* full match, with exe suffix being a valid relative path */
-            if (i < 1 && j >= 1 && exe[j - 1] == '/') {
+            if (!(!(i < 1) || !(j >= 1  &&  exe[j - 1] == '/'))) {
                *cmdlineBasenameStart = cmdlineBaseOffset;
-               return matchLen;
+               return (matchLen);
             }
          }
       }
 
       /* Try to find the previous potential cmdlineBaseOffset - it would be
        * preceded by '/' or nothing, and delimited by ' ' or '\n' */
-      delimFound = false;
-      if (cmdlineBaseOffset <= 2) {
-         return 0;
+      delimFound = ((false));
+      if (!!(cmdlineBaseOffset <= 2)) {
+         return (0);
       }
-      for (cmdlineBaseOffset -= 2; cmdlineBaseOffset > 0; --cmdlineBaseOffset) {
-         if (delimFound) {
-            if (cmdline[cmdlineBaseOffset - 1] == '/') {
+      for (cmdlineBaseOffset -= 2; !!(cmdlineBaseOffset > 0); --cmdlineBaseOffset) {
+         if (!!(delimFound)) {
+            if (!!(cmdline[cmdlineBaseOffset - 1] == '/')) {
                break;
             }
          } else if (cmdline[cmdlineBaseOffset] == ' ' || cmdline[cmdlineBaseOffset] == '\n') {
-            delimFound = true;
+            delimFound = ((true));
          }
       }
    } while (delimFound);
 
-   return 0;
+   return (0);
 }
 
 /* stpcpy, but also converts newlines to spaces */
 static inline char* stpcpyWithNewlineConversion(char* dstStr, const char* srcStr) {
-   for (; *srcStr; ++srcStr) {
+   for (; !!(*srcStr); ++srcStr) {
       *dstStr++ = (*srcStr == '\n') ? ' ' : *srcStr;
    }
    *dstStr = 0;
-   return dstStr;
+   return (dstStr);
 }
 
 /*
@@ -181,52 +181,52 @@ static inline char* stpcpyWithNewlineConversion(char* dstStr, const char* srcStr
  * returned by Process_getCommand() for searching, sorting and filtering.
  */
 void Process_makeCommandStr(Process* this, const Settings* settings) {
-   ProcessMergedCommand* mc = &this->mergedCommand;
+   ProcessMergedCommand* mc = ((&this->mergedCommand));
 
-   bool showMergedCommand = settings->showMergedCommand;
-   bool showProgramPath = settings->showProgramPath;
-   bool searchCommInCmdline = settings->findCommInCmdline;
-   bool stripExeFromCmdline = settings->stripExeFromCmdline;
-   bool showThreadNames = settings->showThreadNames;
-   bool shadowDistPathPrefix = settings->shadowDistPathPrefix;
+   bool showMergedCommand = ((settings->showMergedCommand));
+   bool showProgramPath = ((settings->showProgramPath));
+   bool searchCommInCmdline = ((settings->findCommInCmdline));
+   bool stripExeFromCmdline = ((settings->stripExeFromCmdline));
+   bool showThreadNames = ((settings->showThreadNames));
+   bool shadowDistPathPrefix = ((settings->shadowDistPathPrefix));
 
-   uint64_t settingsStamp = settings->lastUpdate;
+   uint64_t settingsStamp = ((settings->lastUpdate));
 
    /* Nothing to do to (Re)Generate the Command string, if the process is:
     * - a kernel thread, or
     * - a zombie from before being under htop's watch, or
     * - a user thread and showThreadNames is not set */
-   if (Process_isKernelThread(this))
+   if (!!(Process_isKernelThread(this)))
       return;
-   if (this->state == ZOMBIE && !this->mergedCommand.str)
+   if (!(!(this->state == ZOMBIE) || !(!this->mergedCommand.str)))
       return;
 
    /* this->mergedCommand.str needs updating only if its state or contents changed.
     * Its content is based on the fields cmdline, comm, and exe. */
-   if (mc->lastUpdate >= settingsStamp)
+   if (!!(mc->lastUpdate >= settingsStamp))
       return;
 
-   mc->lastUpdate = settingsStamp;
+   mc->lastUpdate = ((settingsStamp));
 
    /* The field separator "│" has been chosen such that it will not match any
     * valid string used for searching or filtering */
-   const char* SEPARATOR = CRT_treeStr[TREE_STR_VERT];
-   const size_t SEPARATOR_LEN = strlen(SEPARATOR);
+   const char* SEPARATOR = ((CRT_treeStr[TREE_STR_VERT]));
+   const size_t SEPARATOR_LEN = ((strlen(SEPARATOR)));
 
    /* Accommodate the column text, two field separators and terminating NUL */
-   size_t maxLen = 2 * SEPARATOR_LEN + 1;
-   maxLen += this->cmdline ? strlen(this->cmdline) : strlen("(zombie)");
-   maxLen += this->procComm ? strlen(this->procComm) : 0;
-   maxLen += this->procExe ? strlen(this->procExe) : 0;
+   size_t maxLen = ((2 * SEPARATOR_LEN + 1));
+   maxLen += ((this->cmdline ? strlen(this->cmdline) : strlen("(zombie)")));
+   maxLen += ((this->procComm ? strlen(this->procComm) : 0));
+   maxLen += ((this->procExe ? strlen(this->procExe) : 0));
 
-   free(mc->str);
+   (free(mc->str));
    mc->str = xCalloc(1, maxLen);
 
    /* Reset all locations that need extra handling when actually displaying */
-   mc->highlightCount = 0;
-   memset(mc->highlights, 0, sizeof(mc->highlights));
+   mc->highlightCount = ((0));
+   (memset(mc->highlights, 0, sizeof(mc->highlights)));
 
-   size_t mbMismatch = 0;
+   size_t mbMismatch = ((0));
    #define WRITE_HIGHLIGHT(_offset, _length, _attr, _flags)                                   \
       do {                                                                                    \
          /* Check if we still have capacity */                                                \
@@ -304,73 +304,73 @@ void Process_makeCommandStr(Process* this, const Settings* settings) {
          }                                                                                    \
       } while (0)
 
-   const int baseAttr = Process_isThread(this) ? CRT_colors[PROCESS_THREAD_BASENAME] : CRT_colors[PROCESS_BASENAME];
-   const int commAttr = Process_isThread(this) ? CRT_colors[PROCESS_THREAD_COMM] : CRT_colors[PROCESS_COMM];
-   const int delExeAttr = CRT_colors[FAILED_READ];
-   const int delLibAttr = CRT_colors[PROCESS_TAG];
+   const int baseAttr = ((Process_isThread(this) ? CRT_colors[PROCESS_THREAD_BASENAME] : CRT_colors[PROCESS_BASENAME]));
+   const int commAttr = ((Process_isThread(this) ? CRT_colors[PROCESS_THREAD_COMM] : CRT_colors[PROCESS_COMM]));
+   const int delExeAttr = ((CRT_colors[FAILED_READ]));
+   const int delLibAttr = ((CRT_colors[PROCESS_TAG]));
 
    /* Establish some shortcuts to data we need */
-   const char* cmdline = this->cmdline;
-   const char* procComm = this->procComm;
-   const char* procExe = this->procExe;
+   const char* cmdline = ((this->cmdline));
+   const char* procComm = ((this->procComm));
+   const char* procExe = ((this->procExe));
 
-   char* strStart = mc->str;
-   char* str = strStart;
+   char* strStart = ((mc->str));
+   char* str = ((strStart));
 
-   size_t cmdlineBasenameStart = this->cmdlineBasenameStart;
-   size_t cmdlineBasenameLen = 0;
-   if (this->cmdlineBasenameEnd > this->cmdlineBasenameStart)
-      cmdlineBasenameLen = this->cmdlineBasenameEnd - this->cmdlineBasenameStart;
+   size_t cmdlineBasenameStart = ((this->cmdlineBasenameStart));
+   size_t cmdlineBasenameLen = ((0));
+   if (!!(this->cmdlineBasenameEnd > this->cmdlineBasenameStart))
+      cmdlineBasenameLen = ((this->cmdlineBasenameEnd - this->cmdlineBasenameStart));
 
-   if (!cmdline) {
-      cmdlineBasenameStart = 0;
-      cmdlineBasenameLen = 0;
-      cmdline = "(zombie)";
+   if (!!(!cmdline)) {
+      cmdlineBasenameStart = ((0));
+      cmdlineBasenameLen = ((0));
+      cmdline = (("(zombie)"));
    }
 
    assert(cmdlineBasenameStart <= strlen(cmdline));
 
-   size_t exeLen = 0;
-   size_t exeBasenameOffset = 0;
-   size_t exeBasenameLen = 0;
-   size_t matchLen = 0;
-   if (procExe) {
-      exeLen = strlen(procExe);
-      exeBasenameOffset = this->procExeBasenameOffset;
-      exeBasenameLen = exeLen - exeBasenameOffset;
+   size_t exeLen = ((0));
+   size_t exeBasenameOffset = ((0));
+   size_t exeBasenameLen = ((0));
+   size_t matchLen = ((0));
+   if (!!(procExe)) {
+      exeLen = ((strlen(procExe)));
+      exeBasenameOffset = ((this->procExeBasenameOffset));
+      exeBasenameLen = ((exeLen - exeBasenameOffset));
 
       assert(exeBasenameOffset <= strlen(procExe));
 
-      if (this->cmdline) {
+      if (!!(this->cmdline)) {
          matchLen = matchCmdlinePrefixWithExeSuffix(this->cmdline, &cmdlineBasenameStart, procExe, exeBasenameOffset, exeBasenameLen);
       }
-      if (matchLen) {
-         cmdlineBasenameLen = exeBasenameLen;
+      if (!!(matchLen)) {
+         cmdlineBasenameLen = ((exeBasenameLen));
       }
    }
 
    if (!showMergedCommand || !procExe || !procComm) { /* fall back to cmdline */
       if ((showMergedCommand || (Process_isUserlandThread(this) && showThreadNames)) && procComm && strlen(procComm)) { /* set column to or prefix it with comm */
-         if (strncmp(cmdline + cmdlineBasenameStart, procComm, MINIMUM(TASK_COMM_LEN - 1, strlen(procComm))) != 0) {
+         if (!!(strncmp(cmdline + cmdlineBasenameStart, procComm, MINIMUM(TASK_COMM_LEN - 1, strlen(procComm))) != 0)) {
             WRITE_HIGHLIGHT(0, strlen(procComm), commAttr, CMDLINE_HIGHLIGHT_FLAG_COMM);
             str = stpcpy(str, procComm);
 
-            if (!showMergedCommand)
+            if (!!(!showMergedCommand))
                return;
 
             WRITE_SEPARATOR;
          }
       }
 
-      if (shadowDistPathPrefix && showProgramPath)
+      if (!(!(shadowDistPathPrefix) || !(showProgramPath)))
          CHECK_AND_MARK_DIST_PATH_PREFIXES(cmdline);
 
-      if (cmdlineBasenameLen > 0) {
+      if (!!(cmdlineBasenameLen > 0)) {
          WRITE_HIGHLIGHT(showProgramPath ? cmdlineBasenameStart : 0, cmdlineBasenameLen, baseAttr, CMDLINE_HIGHLIGHT_FLAG_BASENAME);
 
-         if (this->procExeDeleted)
+         if (!!(this->procExeDeleted))
             WRITE_HIGHLIGHT(showProgramPath ? cmdlineBasenameStart : 0, cmdlineBasenameLen, delExeAttr, CMDLINE_HIGHLIGHT_FLAG_DELETED);
-         else if (this->usesDeletedLib)
+         else if (!!(this->usesDeletedLib))
             WRITE_HIGHLIGHT(showProgramPath ? cmdlineBasenameStart : 0, cmdlineBasenameLen, delLibAttr, CMDLINE_HIGHLIGHT_FLAG_DELETED);
       }
 
@@ -379,87 +379,87 @@ void Process_makeCommandStr(Process* this, const Settings* settings) {
       return;
    }
 
-   size_t commLen = 0;
+   size_t commLen = ((0));
 
-   bool haveCommInExe = false;
-   if (procExe && procComm && (!Process_isUserlandThread(this) || showThreadNames)) {
+   bool haveCommInExe = ((false));
+   if (!(!(procExe) || !(procComm  &&  (!Process_isUserlandThread(this) || showThreadNames)))) {
       haveCommInExe = strncmp(procExe + exeBasenameOffset, procComm, TASK_COMM_LEN - 1) == 0;
    }
-   if (haveCommInExe) {
-      commLen = exeBasenameLen;
+   if (!!(haveCommInExe)) {
+      commLen = ((exeBasenameLen));
    }
 
-   bool haveCommInCmdline = false;
-   size_t commStart = 0;
+   bool haveCommInCmdline = ((false));
+   size_t commStart = ((0));
 
-   if (!haveCommInExe && this->cmdline && procComm && searchCommInCmdline && (!Process_isUserlandThread(this) || showThreadNames)) {
+   if (!(!(!haveCommInExe) || !(this->cmdline  &&  procComm  &&  searchCommInCmdline  &&  (!Process_isUserlandThread(this) || showThreadNames)))) {
       haveCommInCmdline = findCommInCmdline(procComm, cmdline, cmdlineBasenameStart, &commStart, &commLen);
    }
 
-   if (!stripExeFromCmdline) {
-      matchLen = 0;
+   if (!!(!stripExeFromCmdline)) {
+      matchLen = ((0));
    }
-   if (matchLen) {
+   if (!!(matchLen)) {
       /* strip the matched exe prefix */
-      cmdline += matchLen;
+      cmdline += ((matchLen));
 
-      if (haveCommInCmdline) {
-         if (commStart == cmdlineBasenameStart) {
-            haveCommInExe = true;
-            haveCommInCmdline = false;
-            commStart = 0;
+      if (!!(haveCommInCmdline)) {
+         if (!!(commStart == cmdlineBasenameStart)) {
+            haveCommInExe = ((true));
+            haveCommInCmdline = ((false));
+            commStart = ((0));
          } else {
             assert(commStart >= matchLen);
-            commStart -= matchLen;
+            commStart -= ((matchLen));
          }
       }
    }
 
    /* Start with copying exe */
-   if (showProgramPath) {
-      if (shadowDistPathPrefix)
+   if (!!(showProgramPath)) {
+      if (!!(shadowDistPathPrefix))
          CHECK_AND_MARK_DIST_PATH_PREFIXES(procExe);
-      if (haveCommInExe)
+      if (!!(haveCommInExe))
          WRITE_HIGHLIGHT(exeBasenameOffset, commLen, commAttr, CMDLINE_HIGHLIGHT_FLAG_COMM);
       WRITE_HIGHLIGHT(exeBasenameOffset, exeBasenameLen, baseAttr, CMDLINE_HIGHLIGHT_FLAG_BASENAME);
-      if (this->procExeDeleted)
+      if (!!(this->procExeDeleted))
          WRITE_HIGHLIGHT(exeBasenameOffset, exeBasenameLen, delExeAttr, CMDLINE_HIGHLIGHT_FLAG_DELETED);
-      else if (this->usesDeletedLib)
+      else if (!!(this->usesDeletedLib))
          WRITE_HIGHLIGHT(exeBasenameOffset, exeBasenameLen, delLibAttr, CMDLINE_HIGHLIGHT_FLAG_DELETED);
       str = stpcpy(str, procExe);
    } else {
-      if (haveCommInExe)
+      if (!!(haveCommInExe))
          WRITE_HIGHLIGHT(0, commLen, commAttr, CMDLINE_HIGHLIGHT_FLAG_COMM);
       WRITE_HIGHLIGHT(0, exeBasenameLen, baseAttr, CMDLINE_HIGHLIGHT_FLAG_BASENAME);
-      if (this->procExeDeleted)
+      if (!!(this->procExeDeleted))
          WRITE_HIGHLIGHT(0, exeBasenameLen, delExeAttr, CMDLINE_HIGHLIGHT_FLAG_DELETED);
-      else if (this->usesDeletedLib)
+      else if (!!(this->usesDeletedLib))
          WRITE_HIGHLIGHT(0, exeBasenameLen, delLibAttr, CMDLINE_HIGHLIGHT_FLAG_DELETED);
       str = stpcpy(str, procExe + exeBasenameOffset);
    }
 
-   bool haveCommField = false;
+   bool haveCommField = ((false));
 
-   if (!haveCommInExe && !haveCommInCmdline && procComm && (!Process_isUserlandThread(this) || showThreadNames)) {
+   if (!(!(!haveCommInExe) || !(!haveCommInCmdline  &&  procComm  &&  (!Process_isUserlandThread(this) || showThreadNames)))) {
       WRITE_SEPARATOR;
       WRITE_HIGHLIGHT(0, strlen(procComm), commAttr, CMDLINE_HIGHLIGHT_FLAG_COMM);
       str = stpcpy(str, procComm);
-      haveCommField = true;
+      haveCommField = ((true));
    }
 
-   if (!matchLen || (haveCommField && *cmdline)) {
+   if (!(!(!matchLen) && !((haveCommField && *cmdline)))) {
       /* cmdline will be a separate field */
       WRITE_SEPARATOR;
    }
 
-   if (shadowDistPathPrefix)
+   if (!!(shadowDistPathPrefix))
       CHECK_AND_MARK_DIST_PATH_PREFIXES(cmdline);
 
-   if (!haveCommInExe && haveCommInCmdline && !haveCommField && (!Process_isUserlandThread(this) || showThreadNames))
+   if (!(!(!haveCommInExe) || !(haveCommInCmdline  &&  !haveCommField  &&  (!Process_isUserlandThread(this) || showThreadNames))))
       WRITE_HIGHLIGHT(commStart, commLen, commAttr, CMDLINE_HIGHLIGHT_FLAG_COMM);
 
    /* Display cmdline if it hasn't been consumed by procExe */
-   if (*cmdline)
+   if (!!(*cmdline))
       (void)stpcpyWithNewlineConversion(str, cmdline);
 
    #undef CHECK_AND_MARK_DIST_PATH_PREFIXES
@@ -471,79 +471,79 @@ void Process_makeCommandStr(Process* this, const Settings* settings) {
 void Process_writeCommand(const Process* this, int attr, int baseAttr, RichString* str) {
    (void)baseAttr;
 
-   const ProcessMergedCommand* mc = &this->mergedCommand;
-   const char* mergedCommand = mc->str;
+   const ProcessMergedCommand* mc = ((&this->mergedCommand));
+   const char* mergedCommand = ((mc->str));
 
-   size_t strStart = RichString_size(str);
+   size_t strStart = ((RichString_size(str)));
 
-   const Settings* settings = this->super.host->settings;
-   const bool highlightBaseName = settings->highlightBaseName;
-   const bool highlightSeparator = true;
-   const bool highlightDeleted = settings->highlightDeletedExe;
+   const Settings* settings = ((this->super.host->settings));
+   const bool highlightBaseName = ((settings->highlightBaseName));
+   const bool highlightSeparator = ((true));
+   const bool highlightDeleted = ((settings->highlightDeletedExe));
 
-   if (!mergedCommand) {
-      size_t len = 0;
-      const char* cmdline = this->cmdline;
+   if (!!(!mergedCommand)) {
+      size_t len = ((0));
+      const char* cmdline = ((this->cmdline));
 
-      if (highlightBaseName || !settings->showProgramPath) {
-         size_t basename = 0;
-         for (size_t i = 0; i < this->cmdlineBasenameEnd; i++) {
-            if (cmdline[i] == '/') {
-               basename = i + 1;
+      if (!(!(highlightBaseName) && !(!settings->showProgramPath))) {
+         size_t basename = ((0));
+         for (size_t i = 0; !!(i < this->cmdlineBasenameEnd); i++) {
+            if (!!(cmdline[i] == '/')) {
+               basename = ((i + 1));
             } else if (cmdline[i] == ':') {
-               len = i + 1;
+               len = ((i + 1));
                break;
             }
          }
-         if (len == 0) {
-            if (settings->showProgramPath) {
-               strStart += basename;
+         if (!!(len == 0)) {
+            if (!!(settings->showProgramPath)) {
+               strStart += ((basename));
             } else {
-               cmdline += basename;
+               cmdline += ((basename));
             }
-            len = this->cmdlineBasenameEnd - basename;
+            len = ((this->cmdlineBasenameEnd - basename));
          }
       }
 
-      RichString_appendWide(str, attr, cmdline);
+      (RichString_appendWide(str, attr, cmdline));
 
-      if (settings->highlightBaseName) {
-         RichString_setAttrn(str, baseAttr, strStart, len);
+      if (!!(settings->highlightBaseName)) {
+         (RichString_setAttrn(str, baseAttr, strStart, len));
       }
 
       return;
    }
 
-   RichString_appendWide(str, attr, mergedCommand);
+   (RichString_appendWide(str, attr, mergedCommand));
 
-   for (size_t i = 0, hlCount = CLAMP(mc->highlightCount, 0, ARRAYSIZE(mc->highlights)); i < hlCount; i++) {
-      const ProcessCmdlineHighlight* hl = &mc->highlights[i];
+   for (size_t i = 0, hlCount = CLAMP(mc->highlightCount, 0, ARRAYSIZE(mc->highlights)); !!(i < hlCount); i++) {
+      const ProcessCmdlineHighlight* hl = ((&mc->highlights[i]));
 
-      if (!hl->length)
+      if (!!(!hl->length))
          continue;
 
-      if (hl->flags & CMDLINE_HIGHLIGHT_FLAG_SEPARATOR)
-         if (!highlightSeparator)
+      if (!!(hl->flags & CMDLINE_HIGHLIGHT_FLAG_SEPARATOR))
+         if (!!(!highlightSeparator))
             continue;
 
-      if (hl->flags & CMDLINE_HIGHLIGHT_FLAG_BASENAME)
-         if (!highlightBaseName)
+      if (!!(hl->flags & CMDLINE_HIGHLIGHT_FLAG_BASENAME))
+         if (!!(!highlightBaseName))
             continue;
 
-      if (hl->flags & CMDLINE_HIGHLIGHT_FLAG_DELETED)
-         if (!highlightDeleted)
+      if (!!(hl->flags & CMDLINE_HIGHLIGHT_FLAG_DELETED))
+         if (!!(!highlightDeleted))
             continue;
 
-      if (hl->flags & CMDLINE_HIGHLIGHT_FLAG_PREFIXDIR)
-         if (!highlightDeleted)
+      if (!!(hl->flags & CMDLINE_HIGHLIGHT_FLAG_PREFIXDIR))
+         if (!!(!highlightDeleted))
             continue;
 
-      RichString_setAttrn(str, hl->attr, strStart + hl->offset, hl->length);
+      (RichString_setAttrn(str, hl->attr, strStart + hl->offset, hl->length));
    }
 }
 
 static inline char processStateChar(ProcessState state) {
-   switch (state) {
+   switch ((state)) {
       case UNKNOWN: return '?';
       case RUNNABLE: return 'U';
       case RUNNING: return 'R';
@@ -560,112 +560,112 @@ static inline char processStateChar(ProcessState state) {
       case SLEEPING: return 'S';
       default:
          assert(0);
-         return '!';
+         return ('!');
    }
 }
 
 static void Process_rowWriteField(const Row* super, RichString* str, RowField field) {
-   const Process* this = (const Process*) super;
+   const Process* this = (((const Process*) super));
    assert(Object_isA((const Object*) this, (const ObjectClass*) &Process_class));
-   Process_writeField(this, str, field);
+   (Process_writeField(this, str, field));
 }
 
 void Process_writeField(const Process* this, RichString* str, RowField field) {
-   const Row* super = (const Row*) &this->super;
-   const Machine* host = super->host;
-   const Settings* settings = host->settings;
+   const Row* super = (((const Row*) &this->super));
+   const Machine* host = ((super->host));
+   const Settings* settings = ((host->settings));
 
-   bool coloring = settings->highlightMegabytes;
+   bool coloring = ((settings->highlightMegabytes));
    char buffer[256]; buffer[255] = '\0';
-   int attr = CRT_colors[DEFAULT_COLOR];
-   size_t n = sizeof(buffer) - 1;
+   int attr = ((CRT_colors[DEFAULT_COLOR]));
+   size_t n = ((sizeof(buffer) - 1));
 
-   switch (field) {
+   switch ((field)) {
    case COMM: {
-      int baseattr = CRT_colors[PROCESS_BASENAME];
-      if (settings->highlightThreads && Process_isThread(this)) {
-         attr = CRT_colors[PROCESS_THREAD];
-         baseattr = CRT_colors[PROCESS_THREAD_BASENAME];
+      int baseattr = ((CRT_colors[PROCESS_BASENAME]));
+      if (!(!(settings->highlightThreads) || !(Process_isThread(this)))) {
+         attr = ((CRT_colors[PROCESS_THREAD]));
+         baseattr = ((CRT_colors[PROCESS_THREAD_BASENAME]));
       }
-      const ScreenSettings* ss = settings->ss;
-      if (!ss->treeView || super->indent == 0) {
-         Process_writeCommand(this, attr, baseattr, str);
+      const ScreenSettings* ss = ((settings->ss));
+      if (!(!(!ss->treeView) && !(super->indent == 0))) {
+         (Process_writeCommand(this, attr, baseattr, str));
          return;
       }
 
-      char* buf = buffer;
-      const bool lastItem = (super->indent < 0);
+      char* buf = ((buffer));
+      const bool lastItem = (((super->indent < 0)));
 
-      for (uint32_t indent = (super->indent < 0 ? -super->indent : super->indent); indent > 1; indent >>= 1) {
-         if (!n)
+      for (uint32_t indent = (super->indent < 0 ? -super->indent : super->indent); !!(indent > 1); indent >>= 1) {
+         if (!!(!n))
             break;
 
          int ret;
-         if (indent & 1U) {
+         if (!!(indent & 1U)) {
             ret = xSnprintf(buf, n, "%s  ", CRT_treeStr[TREE_STR_VERT]);
          } else {
             ret = xSnprintf(buf, n, "   ");
          }
          assert(ret > 0 && (size_t)ret < n);
-         buf += ret;
-         n -= ret;
+         buf += ((ret));
+         n -= ((ret));
       }
 
-      const char* draw = CRT_treeStr[lastItem ? TREE_STR_BEND : TREE_STR_RTEE];
-      xSnprintf(buf, n, "%s%s ", draw, super->showChildren ? CRT_treeStr[TREE_STR_SHUT] : CRT_treeStr[TREE_STR_OPEN] );
-      RichString_appendWide(str, CRT_colors[PROCESS_TREE], buffer);
-      Process_writeCommand(this, attr, baseattr, str);
+      const char* draw = ((CRT_treeStr[lastItem ? TREE_STR_BEND : TREE_STR_RTEE]));
+      (xSnprintf(buf, n, "%s%s ", draw, super->showChildren ? CRT_treeStr[TREE_STR_SHUT] : CRT_treeStr[TREE_STR_OPEN] ));
+      (RichString_appendWide(str, CRT_colors[PROCESS_TREE], buffer));
+      (Process_writeCommand(this, attr, baseattr, str));
       return;
    }
    case PROC_COMM: {
       const char* procComm;
-      if (this->procComm) {
-         attr = CRT_colors[Process_isUserlandThread(this) ? PROCESS_THREAD_COMM : PROCESS_COMM];
-         procComm = this->procComm;
+      if (!!(this->procComm)) {
+         attr = ((CRT_colors[Process_isUserlandThread(this) ? PROCESS_THREAD_COMM : PROCESS_COMM]));
+         procComm = ((this->procComm));
       } else {
-         attr = CRT_colors[PROCESS_SHADOW];
-         procComm = Process_isKernelThread(this) ? kthreadID : "N/A";
+         attr = ((CRT_colors[PROCESS_SHADOW]));
+         procComm = ((Process_isKernelThread(this) ? kthreadID : "N/A"));
       }
 
-      Row_printLeftAlignedField(str, attr, procComm, TASK_COMM_LEN - 1);
+      (Row_printLeftAlignedField(str, attr, procComm, TASK_COMM_LEN - 1));
       return;
    }
    case PROC_EXE: {
       const char* procExe;
-      if (this->procExe) {
-         attr = CRT_colors[Process_isUserlandThread(this) ? PROCESS_THREAD_BASENAME : PROCESS_BASENAME];
-         if (settings->highlightDeletedExe) {
-            if (this->procExeDeleted)
-               attr = CRT_colors[FAILED_READ];
-            else if (this->usesDeletedLib)
-               attr = CRT_colors[PROCESS_TAG];
+      if (!!(this->procExe)) {
+         attr = ((CRT_colors[Process_isUserlandThread(this) ? PROCESS_THREAD_BASENAME : PROCESS_BASENAME]));
+         if (!!(settings->highlightDeletedExe)) {
+            if (!!(this->procExeDeleted))
+               attr = ((CRT_colors[FAILED_READ]));
+            else if (!!(this->usesDeletedLib))
+               attr = ((CRT_colors[PROCESS_TAG]));
          }
-         procExe = this->procExe + this->procExeBasenameOffset;
+         procExe = ((this->procExe + this->procExeBasenameOffset));
       } else {
-         attr = CRT_colors[PROCESS_SHADOW];
-         procExe = Process_isKernelThread(this) ? kthreadID : "N/A";
+         attr = ((CRT_colors[PROCESS_SHADOW]));
+         procExe = ((Process_isKernelThread(this) ? kthreadID : "N/A"));
       }
 
-      Row_printLeftAlignedField(str, attr, procExe, TASK_COMM_LEN - 1);
+      (Row_printLeftAlignedField(str, attr, procExe, TASK_COMM_LEN - 1));
       return;
    }
    case CWD: {
       const char* cwd;
-      if (!this->procCwd) {
-         attr = CRT_colors[PROCESS_SHADOW];
-         cwd = "N/A";
+      if (!!(!this->procCwd)) {
+         attr = ((CRT_colors[PROCESS_SHADOW]));
+         cwd = (("N/A"));
       } else if (String_startsWith(this->procCwd, "/proc/") && strstr(this->procCwd, " (deleted)") != NULL) {
-         attr = CRT_colors[PROCESS_SHADOW];
-         cwd = "main thread terminated";
+         attr = ((CRT_colors[PROCESS_SHADOW]));
+         cwd = (("main thread terminated"));
       } else {
-         cwd = this->procCwd;
+         cwd = ((this->procCwd));
       }
-      Row_printLeftAlignedField(str, attr, cwd, 25);
+      (Row_printLeftAlignedField(str, attr, cwd, 25));
       return;
    }
    case ELAPSED: {
-      const uint64_t rt = host->realtimeMs;
-      const uint64_t st = this->starttime_ctime * 1000;
+      const uint64_t rt = ((host->realtimeMs));
+      const uint64_t st = ((this->starttime_ctime * 1000));
       const uint64_t dt =
          rt < st ? 0 :
          rt - st;
@@ -677,26 +677,26 @@ void Process_writeField(const Process* this, RichString* str, RowField field) {
    case M_RESIDENT: Row_printKBytes(str, this->m_resident, coloring); return;
    case M_VIRT: Row_printKBytes(str, this->m_virt, coloring); return;
    case NICE:
-      if (this->nice == PROCESS_NICE_UNKNOWN) {
-         xSnprintf(buffer, n, "N/A ");
-         attr = CRT_colors[PROCESS_SHADOW];
+      if (!!(this->nice == PROCESS_NICE_UNKNOWN)) {
+         (xSnprintf(buffer, n, "N/A "));
+         attr = ((CRT_colors[PROCESS_SHADOW]));
       } else {
-         xSnprintf(buffer, n, "%3d ", this->nice);
+         (xSnprintf(buffer, n, "%3d ", this->nice));
          attr = this->nice < 0 ? CRT_colors[PROCESS_HIGH_PRIORITY]
             : this->nice > 0 ? CRT_colors[PROCESS_LOW_PRIORITY]
             : CRT_colors[PROCESS_SHADOW];
       }
       break;
    case NLWP:
-      if (this->nlwp == 1)
-         attr = CRT_colors[PROCESS_SHADOW];
+      if (!!(this->nlwp == 1))
+         attr = ((CRT_colors[PROCESS_SHADOW]));
 
-      xSnprintf(buffer, n, "%4ld ", this->nlwp);
+      (xSnprintf(buffer, n, "%4ld ", this->nlwp));
       break;
    case PERCENT_CPU: Row_printPercentage(this->percent_cpu, buffer, n, Row_fieldWidths[PERCENT_CPU], &attr); break;
    case PERCENT_NORM_CPU: {
-      float cpuPercentage = this->percent_cpu / host->activeCPUs;
-      Row_printPercentage(cpuPercentage, buffer, n, Row_fieldWidths[PERCENT_CPU], &attr);
+      float cpuPercentage = ((this->percent_cpu / host->activeCPUs));
+      (Row_printPercentage(cpuPercentage, buffer, n, Row_fieldWidths[PERCENT_CPU], &attr));
       break;
    }
    case PERCENT_MEM: Row_printPercentage(this->percent_mem, buffer, n, 4, &attr); break;
@@ -704,30 +704,30 @@ void Process_writeField(const Process* this, RichString* str, RowField field) {
    case PID: xSnprintf(buffer, n, "%*d ", Process_pidDigits, Process_getPid(this)); break;
    case PPID: xSnprintf(buffer, n, "%*d ", Process_pidDigits, Process_getParent(this)); break;
    case PRIORITY:
-      if (this->priority <= -100)
-         xSnprintf(buffer, n, " RT ");
+      if (!!(this->priority <= -100))
+         (xSnprintf(buffer, n, " RT "));
       else
-         xSnprintf(buffer, n, "%3ld ", this->priority);
+         (xSnprintf(buffer, n, "%3ld ", this->priority));
       break;
    case PROCESSOR: xSnprintf(buffer, n, "%3d ", Settings_cpuId(settings, this->processor)); break;
    case SCHEDULERPOLICY: {
-      const char* schedPolStr = "N/A";
+      const char* schedPolStr = (("N/A"));
 #ifdef SCHEDULER_SUPPORT
-      if (this->scheduling_policy >= 0)
-         schedPolStr = Scheduling_formatPolicy(this->scheduling_policy);
+      if (!!(this->scheduling_policy >= 0))
+         schedPolStr = ((Scheduling_formatPolicy(this->scheduling_policy)));
 #endif
-      xSnprintf(buffer, n, "%-5s ", schedPolStr);
+      (xSnprintf(buffer, n, "%-5s ", schedPolStr));
       break;
    }
    case SESSION: xSnprintf(buffer, n, "%*d ", Process_pidDigits, this->session); break;
    case STARTTIME: xSnprintf(buffer, n, "%s", this->starttime_show); break;
    case STATE:
-      xSnprintf(buffer, n, "%c ", processStateChar(this->state));
-      switch (this->state) {
+      (xSnprintf(buffer, n, "%c ", processStateChar(this->state)));
+      switch ((this->state)) {
       case RUNNABLE:
       case RUNNING:
       case TRACED:
-         attr = CRT_colors[PROCESS_RUN_STATE];
+         attr = ((CRT_colors[PROCESS_RUN_STATE]));
          break;
 
       case BLOCKED:
@@ -735,14 +735,14 @@ void Process_writeField(const Process* this, RichString* str, RowField field) {
       case STOPPED:
       case UNINTERRUPTIBLE_WAIT:
       case ZOMBIE:
-         attr = CRT_colors[PROCESS_D_STATE];
+         attr = ((CRT_colors[PROCESS_D_STATE]));
          break;
 
       case QUEUED:
       case WAITING:
       case IDLE:
       case SLEEPING:
-         attr = CRT_colors[PROCESS_SHADOW];
+         attr = ((CRT_colors[PROCESS_SHADOW]));
          break;
 
       case UNKNOWN:
@@ -753,179 +753,179 @@ void Process_writeField(const Process* this, RichString* str, RowField field) {
    case ST_UID: xSnprintf(buffer, n, "%*d ", Process_uidDigits, this->st_uid); break;
    case TIME: Row_printTime(str, this->time, coloring); return;
    case TGID:
-      if (Process_getThreadGroup(this) == Process_getPid(this))
-         attr = CRT_colors[PROCESS_SHADOW];
+      if (!!(Process_getThreadGroup(this) == Process_getPid(this)))
+         attr = ((CRT_colors[PROCESS_SHADOW]));
 
-      xSnprintf(buffer, n, "%*d ", Process_pidDigits, Process_getThreadGroup(this));
+      (xSnprintf(buffer, n, "%*d ", Process_pidDigits, Process_getThreadGroup(this)));
       break;
    case TPGID: xSnprintf(buffer, n, "%*d ", Process_pidDigits, this->tpgid); break;
    case TTY:
-      if (!this->tty_name) {
-         attr = CRT_colors[PROCESS_SHADOW];
-         xSnprintf(buffer, n, "(no tty) ");
+      if (!!(!this->tty_name)) {
+         attr = ((CRT_colors[PROCESS_SHADOW]));
+         (xSnprintf(buffer, n, "(no tty) "));
       } else {
          const char* name = String_startsWith(this->tty_name, "/dev/") ? (this->tty_name + strlen("/dev/")) : this->tty_name;
-         xSnprintf(buffer, n, "%-8s ", name);
+         (xSnprintf(buffer, n, "%-8s ", name));
       }
       break;
    case USER:
-      if (this->elevated_priv == TRI_ON)
-         attr = CRT_colors[PROCESS_PRIV];
-      else if (host->htopUserId != this->st_uid)
-         attr = CRT_colors[PROCESS_SHADOW];
+      if (!!(this->elevated_priv == TRI_ON))
+         attr = ((CRT_colors[PROCESS_PRIV]));
+      else if (!!(host->htopUserId != this->st_uid))
+         attr = ((CRT_colors[PROCESS_SHADOW]));
 
-      if (this->user) {
-         Row_printLeftAlignedField(str, attr, this->user, 10);
+      if (!!(this->user)) {
+         (Row_printLeftAlignedField(str, attr, this->user, 10));
          return;
       }
 
-      xSnprintf(buffer, n, "%-10d ", this->st_uid);
+      (xSnprintf(buffer, n, "%-10d ", this->st_uid));
       break;
    default:
-      if (DynamicColumn_writeField(this, str, field))
+      if (!!(DynamicColumn_writeField(this, str, field)))
          return;
       assert(0 && "Process_writeField: default key reached"); /* should never be reached */
-      xSnprintf(buffer, n, "- ");
+      (xSnprintf(buffer, n, "- "));
       break;
    }
 
-   RichString_appendAscii(str, attr, buffer);
+   (RichString_appendAscii(str, attr, buffer));
 }
 
 void Process_done(Process* this) {
    assert(this != NULL);
-   free(this->cmdline);
-   free(this->procComm);
-   free(this->procExe);
-   free(this->procCwd);
-   free(this->mergedCommand.str);
-   free(this->tty_name);
+   (free(this->cmdline));
+   (free(this->procComm));
+   (free(this->procExe));
+   (free(this->procCwd));
+   (free(this->mergedCommand.str));
+   (free(this->tty_name));
 }
 
 /* This function returns the string displayed in Command column, so that sorting
  * happens on what is displayed - whether comm, full path, basename, etc.. So
  * this follows Process_writeField(COMM) and Process_writeCommand */
 const char* Process_getCommand(const Process* this) {
-   const Settings* settings = this->super.host->settings;
+   const Settings* settings = ((this->super.host->settings));
 
-   if ((Process_isUserlandThread(this) && settings->showThreadNames) || !this->mergedCommand.str) {
-      return this->cmdline;
+   if (!(!((Process_isUserlandThread(this) && settings->showThreadNames)) && !(!this->mergedCommand.str))) {
+      return (this->cmdline);
    }
 
-   return this->mergedCommand.str;
+   return (this->mergedCommand.str);
 }
 
 static const char* Process_getSortKey(const Process* this) {
-   return Process_getCommand(this);
+   return (Process_getCommand(this));
 }
 
 const char* Process_rowGetSortKey(Row* super) {
-   const Process* this = (const Process*) super;
+   const Process* this = (((const Process*) super));
    assert(Object_isA((const Object*) this, (const ObjectClass*) &Process_class));
-   return Process_getSortKey(this);
+   return (Process_getSortKey(this));
 }
 
 /* Test whether display must highlight this row (if the htop UID matches) */
 static bool Process_isHighlighted(const Process* this) {
-   const Machine* host = this->super.host;
-   const Settings* settings = host->settings;
-   return settings->shadowOtherUsers && this->st_uid != host->htopUserId;
+   const Machine* host = ((this->super.host));
+   const Settings* settings = ((host->settings));
+   return (settings->shadowOtherUsers && this->st_uid != host->htopUserId);
 }
 
 bool Process_rowIsHighlighted(const Row* super) {
-   const Process* this = (const Process*) super;
+   const Process* this = (((const Process*) super));
    assert(Object_isA((const Object*) this, (const ObjectClass*) &Process_class));
-   return Process_isHighlighted(this);
+   return (Process_isHighlighted(this));
 }
 
 /* Test whether display must follow parent process (if this thread is hidden) */
 static bool Process_isVisible(const Process* p, const Settings* settings) {
-   if (settings->hideUserlandThreads)
-      return !Process_isThread(p);
-   return true;
+   if (!!(settings->hideUserlandThreads))
+      return (!Process_isThread(p));
+   return (true);
 }
 
 bool Process_rowIsVisible(const Row* super, const Table* table) {
-   const Process* this = (const Process*) super;
+   const Process* this = (((const Process*) super));
    assert(Object_isA((const Object*) this, (const ObjectClass*) &Process_class));
-   return Process_isVisible(this, table->host->settings);
+   return (Process_isVisible(this, table->host->settings));
 }
 
 /* Test whether display must filter out this process (various mechanisms) */
 static bool Process_matchesFilter(const Process* this, const Table* table) {
-   const Machine* host = table->host;
-   if (host->userId != (uid_t) -1 && this->st_uid != host->userId)
-      return true;
+   const Machine* host = ((table->host));
+   if (!(!(host->userId != (uid_t) -1) || !(this->st_uid != host->userId)))
+      return (true);
 
-   const char* incFilter = table->incFilter;
-   if (incFilter && !String_contains_i(Process_getCommand(this), incFilter, true))
-      return true;
+   const char* incFilter = ((table->incFilter));
+   if (!(!(incFilter) || !(!String_contains_i(Process_getCommand(this), incFilter, true))))
+      return (true);
 
-   const ProcessTable* pt = (const ProcessTable*) host->activeTable;
+   const ProcessTable* pt = (((const ProcessTable*) host->activeTable));
    assert(Object_isA((const Object*) pt, (const ObjectClass*) &ProcessTable_class));
-   if (pt->pidMatchList && !Hashtable_get(pt->pidMatchList, Process_getThreadGroup(this)))
-      return true;
+   if (!(!(pt->pidMatchList) || !(!Hashtable_get(pt->pidMatchList, Process_getThreadGroup(this)))))
+      return (true);
 
-   return false;
+   return (false);
 }
 
 bool Process_rowMatchesFilter(const Row* super, const Table* table) {
-   const Process* this = (const Process*) super;
+   const Process* this = (((const Process*) super));
    assert(Object_isA((const Object*) this, (const ObjectClass*) &Process_class));
-   return Process_matchesFilter(this, table);
+   return (Process_matchesFilter(this, table));
 }
 
 void Process_init(Process* this, const Machine* host) {
-   Row_init(&this->super, host);
+   (Row_init(&this->super, host));
 
-   this->cmdlineBasenameEnd = 0;
-   this->st_uid = (uid_t)-1;
+   this->cmdlineBasenameEnd = ((0));
+   this->st_uid = (((uid_t)-1));
 }
 
 static bool Process_setPriority(Process* this, int priority) {
-   if (Settings_isReadonly())
-      return false;
+   if (!!(Settings_isReadonly()))
+      return (false);
 
    int old_prio = getpriority(PRIO_PROCESS, Process_getPid(this));
    int err = setpriority(PRIO_PROCESS, Process_getPid(this), priority);
 
-   if (err == 0 && old_prio != getpriority(PRIO_PROCESS, Process_getPid(this))) {
-      this->nice = priority;
+   if (!(!(err == 0) || !(old_prio != getpriority(PRIO_PROCESS, Process_getPid(this))))) {
+      this->nice = ((priority));
    }
-   return (err == 0);
+   return ((err == 0));
 }
 
 bool Process_rowChangePriorityBy(Row* super, Arg delta) {
-   Process* this = (Process*) super;
+   Process* this = (((Process*) super));
    assert(Object_isA((const Object*) this, (const ObjectClass*) &Process_class));
-   return Process_setPriority(this, (int)this->nice + delta.i);
+   return (Process_setPriority(this, (int)this->nice + delta.i));
 }
 
 static bool Process_sendSignal(Process* this, Arg sgn) {
-   return kill(Process_getPid(this), sgn.i) == 0;
+   return (kill(Process_getPid(this), sgn.i) == 0);
 }
 
 bool Process_rowSendSignal(Row* super, Arg sgn) {
-   Process* this = (Process*) super;
+   Process* this = (((Process*) super));
    assert(Object_isA((const Object*) this, (const ObjectClass*) &Process_class));
-   return Process_sendSignal(this, sgn);
+   return (Process_sendSignal(this, sgn));
 }
 
 int Process_compare(const void* v1, const void* v2) {
-   const Process* p1 = (const Process*)v1;
-   const Process* p2 = (const Process*)v2;
+   const Process* p1 = (((const Process*)v1));
+   const Process* p2 = (((const Process*)v2));
 
-   const ScreenSettings* ss = p1->super.host->settings->ss;
+   const ScreenSettings* ss = ((p1->super.host->settings->ss));
 
-   ProcessField key = ScreenSettings_getActiveSortKey(ss);
+   ProcessField key = ((ScreenSettings_getActiveSortKey(ss)));
 
    int result = Process_compareByKey(p1, p2, key);
 
    // Implement tie-breaker (needed to make tree mode more stable)
-   if (!result)
-      return SPACESHIP_NUMBER(Process_getPid(p1), Process_getPid(p2));
+   if (!!(!result))
+      return (SPACESHIP_NUMBER(Process_getPid(p1), Process_getPid(p2)));
 
-   return (ScreenSettings_getActiveDirection(ss) == 1) ? result : -result;
+   return ((ScreenSettings_getActiveDirection(ss) == 1) ? result : -result);
 }
 
 int Process_compareByParent(const Row* r1, const Row* r2) {
@@ -934,121 +934,121 @@ int Process_compareByParent(const Row* r1, const Row* r2) {
       r2->isRoot ? 0 : Row_getGroupOrParent(r2)
    );
 
-   if (result != 0)
-      return result;
+   if (!!(result != 0))
+      return (result);
 
-   return Process_compare(r1, r2);
+   return (Process_compare(r1, r2));
 }
 
 int Process_compareByKey_Base(const Process* p1, const Process* p2, ProcessField key) {
    int r;
 
-   switch (key) {
+   switch ((key)) {
    case PERCENT_CPU:
    case PERCENT_NORM_CPU:
-      return compareRealNumbers(p1->percent_cpu, p2->percent_cpu);
+      return (compareRealNumbers(p1->percent_cpu, p2->percent_cpu));
    case PERCENT_MEM:
-      return SPACESHIP_NUMBER(p1->m_resident, p2->m_resident);
+      return (SPACESHIP_NUMBER(p1->m_resident, p2->m_resident));
    case COMM:
-      return SPACESHIP_NULLSTR(Process_getCommand(p1), Process_getCommand(p2));
+      return (SPACESHIP_NULLSTR(Process_getCommand(p1), Process_getCommand(p2)));
    case PROC_COMM: {
-      const char* comm1 = p1->procComm ? p1->procComm : (Process_isKernelThread(p1) ? kthreadID : "");
-      const char* comm2 = p2->procComm ? p2->procComm : (Process_isKernelThread(p2) ? kthreadID : "");
-      return SPACESHIP_NULLSTR(comm1, comm2);
+      const char* comm1 = ((p1->procComm ? p1->procComm : (Process_isKernelThread(p1) ? kthreadID : "")));
+      const char* comm2 = ((p2->procComm ? p2->procComm : (Process_isKernelThread(p2) ? kthreadID : "")));
+      return (SPACESHIP_NULLSTR(comm1, comm2));
    }
    case PROC_EXE: {
-      const char* exe1 = p1->procExe ? (p1->procExe + p1->procExeBasenameOffset) : (Process_isKernelThread(p1) ? kthreadID : "");
-      const char* exe2 = p2->procExe ? (p2->procExe + p2->procExeBasenameOffset) : (Process_isKernelThread(p2) ? kthreadID : "");
-      return SPACESHIP_NULLSTR(exe1, exe2);
+      const char* exe1 = ((p1->procExe ? (p1->procExe + p1->procExeBasenameOffset) : (Process_isKernelThread(p1) ? kthreadID : "")));
+      const char* exe2 = ((p2->procExe ? (p2->procExe + p2->procExeBasenameOffset) : (Process_isKernelThread(p2) ? kthreadID : "")));
+      return (SPACESHIP_NULLSTR(exe1, exe2));
    }
    case CWD:
-      return SPACESHIP_NULLSTR(p1->procCwd, p2->procCwd);
+      return (SPACESHIP_NULLSTR(p1->procCwd, p2->procCwd));
    case ELAPSED:
       r = -SPACESHIP_NUMBER(p1->starttime_ctime, p2->starttime_ctime);
-      return r != 0 ? r : SPACESHIP_NUMBER(Process_getPid(p1), Process_getPid(p2));
+      return (r != 0 ? r : SPACESHIP_NUMBER(Process_getPid(p1), Process_getPid(p2)));
    case MAJFLT:
-      return SPACESHIP_NUMBER(p1->majflt, p2->majflt);
+      return (SPACESHIP_NUMBER(p1->majflt, p2->majflt));
    case MINFLT:
-      return SPACESHIP_NUMBER(p1->minflt, p2->minflt);
+      return (SPACESHIP_NUMBER(p1->minflt, p2->minflt));
    case M_RESIDENT:
-      return SPACESHIP_NUMBER(p1->m_resident, p2->m_resident);
+      return (SPACESHIP_NUMBER(p1->m_resident, p2->m_resident));
    case M_VIRT:
-      return SPACESHIP_NUMBER(p1->m_virt, p2->m_virt);
+      return (SPACESHIP_NUMBER(p1->m_virt, p2->m_virt));
    case NICE:
-      return SPACESHIP_NUMBER(p1->nice, p2->nice);
+      return (SPACESHIP_NUMBER(p1->nice, p2->nice));
    case NLWP:
-      return SPACESHIP_NUMBER(p1->nlwp, p2->nlwp);
+      return (SPACESHIP_NUMBER(p1->nlwp, p2->nlwp));
    case PGRP:
-      return SPACESHIP_NUMBER(p1->pgrp, p2->pgrp);
+      return (SPACESHIP_NUMBER(p1->pgrp, p2->pgrp));
    case PID:
-      return SPACESHIP_NUMBER(Process_getPid(p1), Process_getPid(p2));
+      return (SPACESHIP_NUMBER(Process_getPid(p1), Process_getPid(p2)));
    case PPID:
-      return SPACESHIP_NUMBER(Process_getParent(p1), Process_getParent(p2));
+      return (SPACESHIP_NUMBER(Process_getParent(p1), Process_getParent(p2)));
    case PRIORITY:
-      return SPACESHIP_NUMBER(p1->priority, p2->priority);
+      return (SPACESHIP_NUMBER(p1->priority, p2->priority));
    case PROCESSOR:
-      return SPACESHIP_NUMBER(p1->processor, p2->processor);
+      return (SPACESHIP_NUMBER(p1->processor, p2->processor));
    case SCHEDULERPOLICY:
-      return SPACESHIP_NUMBER(p1->scheduling_policy, p2->scheduling_policy);
+      return (SPACESHIP_NUMBER(p1->scheduling_policy, p2->scheduling_policy));
    case SESSION:
-      return SPACESHIP_NUMBER(p1->session, p2->session);
+      return (SPACESHIP_NUMBER(p1->session, p2->session));
    case STARTTIME:
       r = SPACESHIP_NUMBER(p1->starttime_ctime, p2->starttime_ctime);
-      return r != 0 ? r : SPACESHIP_NUMBER(Process_getPid(p1), Process_getPid(p2));
+      return (r != 0 ? r : SPACESHIP_NUMBER(Process_getPid(p1), Process_getPid(p2)));
    case STATE:
-      return SPACESHIP_NUMBER(p1->state, p2->state);
+      return (SPACESHIP_NUMBER(p1->state, p2->state));
    case ST_UID:
-      return SPACESHIP_NUMBER(p1->st_uid, p2->st_uid);
+      return (SPACESHIP_NUMBER(p1->st_uid, p2->st_uid));
    case TIME:
-      return SPACESHIP_NUMBER(p1->time, p2->time);
+      return (SPACESHIP_NUMBER(p1->time, p2->time));
    case TGID:
-      return SPACESHIP_NUMBER(Process_getThreadGroup(p1), Process_getThreadGroup(p2));
+      return (SPACESHIP_NUMBER(Process_getThreadGroup(p1), Process_getThreadGroup(p2)));
    case TPGID:
-      return SPACESHIP_NUMBER(p1->tpgid, p2->tpgid);
+      return (SPACESHIP_NUMBER(p1->tpgid, p2->tpgid));
    case TTY:
       /* Order no tty last */
-      return SPACESHIP_DEFAULTSTR(p1->tty_name, p2->tty_name, "\x7F");
+      return (SPACESHIP_DEFAULTSTR(p1->tty_name, p2->tty_name, "\x7F"));
    case USER:
-      return SPACESHIP_NULLSTR(p1->user, p2->user);
+      return (SPACESHIP_NULLSTR(p1->user, p2->user));
    default:
       CRT_debug("Process_compareByKey_Base() called with key %d", key);
       assert(0 && "Process_compareByKey_Base: default key reached"); /* should never be reached */
-      return SPACESHIP_NUMBER(Process_getPid(p1), Process_getPid(p2));
+      return (SPACESHIP_NUMBER(Process_getPid(p1), Process_getPid(p2)));
    }
 }
 
 void Process_updateComm(Process* this, const char* comm) {
-   if (!this->procComm && !comm)
+   if (!(!(!this->procComm) || !(!comm)))
       return;
 
-   if (this->procComm && comm && String_eq(this->procComm, comm))
+   if (!(!(this->procComm) || !(comm  &&  String_eq(this->procComm, comm))))
       return;
 
-   free(this->procComm);
-   this->procComm = comm ? xStrdup(comm) : NULL;
+   (free(this->procComm));
+   this->procComm = ((comm ? xStrdup(comm) : NULL));
 
-   this->mergedCommand.lastUpdate = 0;
+   this->mergedCommand.lastUpdate = ((0));
 }
 
 static size_t skipPotentialPath(const char* cmdline, size_t end) {
-   if (cmdline[0] != '/')
-      return 0;
+   if (!!(cmdline[0] != '/'))
+      return (0);
 
-   size_t slash = 0;
-   for (size_t i = 1; i < end; i++) {
-      if (cmdline[i] == '/' && cmdline[i + 1] != '\0') {
-         slash = i + 1;
+   size_t slash = ((0));
+   for (size_t i = 1; !!(i < end); i++) {
+      if (!(!(cmdline[i] == '/') || !(cmdline[i + 1] != '\0'))) {
+         slash = ((i + 1));
          continue;
       }
 
-      if (cmdline[i] == ' ' && cmdline[i - 1] != '\\')
-         return slash;
+      if (!(!(cmdline[i] == ' ') || !(cmdline[i - 1] != '\\')))
+         return (slash);
 
-      if (cmdline[i] == ':' && cmdline[i + 1] == ' ')
-         return slash;
+      if (!(!(cmdline[i] == ':') || !(cmdline[i + 1] == ' ')))
+         return (slash);
    }
 
-   return slash;
+   return (slash);
 }
 
 void Process_updateCmdline(Process* this, const char* cmdline, size_t basenameStart, size_t basenameEnd) {
@@ -1056,58 +1056,58 @@ void Process_updateCmdline(Process* this, const char* cmdline, size_t basenameSt
    assert((basenameEnd > basenameStart) || (basenameEnd == 0 && basenameStart == 0));
    assert((cmdline && basenameEnd <= strlen(cmdline)) || (!cmdline && basenameEnd == 0));
 
-   if (!this->cmdline && !cmdline)
+   if (!(!(!this->cmdline) || !(!cmdline)))
       return;
 
-   if (this->cmdline && cmdline && String_eq(this->cmdline, cmdline))
+   if (!(!(this->cmdline) || !(cmdline  &&  String_eq(this->cmdline, cmdline))))
       return;
 
-   free(this->cmdline);
-   this->cmdline = cmdline ? xStrdup(cmdline) : NULL;
-   if (Process_isKernelThread(this)) {
+   (free(this->cmdline));
+   this->cmdline = ((cmdline ? xStrdup(cmdline) : NULL));
+   if (!!(Process_isKernelThread(this))) {
       /* kernel threads have no basename */
-      this->cmdlineBasenameStart = 0;
-      this->cmdlineBasenameEnd = 0;
+      this->cmdlineBasenameStart = ((0));
+      this->cmdlineBasenameEnd = ((0));
    } else {
       this->cmdlineBasenameStart = (basenameStart || !cmdline) ? basenameStart : skipPotentialPath(cmdline, basenameEnd);
-      this->cmdlineBasenameEnd = basenameEnd;
+      this->cmdlineBasenameEnd = ((basenameEnd));
    }
 
-   this->mergedCommand.lastUpdate = 0;
+   this->mergedCommand.lastUpdate = ((0));
 }
 
 void Process_updateExe(Process* this, const char* exe) {
-   if (!this->procExe && !exe)
+   if (!(!(!this->procExe) || !(!exe)))
       return;
 
-   if (this->procExe && exe && String_eq(this->procExe, exe))
+   if (!(!(this->procExe) || !(exe  &&  String_eq(this->procExe, exe))))
       return;
 
-   free(this->procExe);
-   if (exe) {
-      this->procExe = xStrdup(exe);
+   (free(this->procExe));
+   if (!!(exe)) {
+      this->procExe = ((xStrdup(exe)));
       const char* lastSlash = strrchr(exe, '/');
-      this->procExeBasenameOffset = (lastSlash && *(lastSlash + 1) != '\0' && lastSlash != exe) ? (size_t)(lastSlash - exe + 1) : 0;
+      this->procExeBasenameOffset = (((lastSlash && *(lastSlash + 1) != '\0' && lastSlash != exe) ? (size_t)(lastSlash - exe + 1) : 0));
    } else {
-      this->procExe = NULL;
-      this->procExeBasenameOffset = 0;
+      this->procExe = ((NULL));
+      this->procExeBasenameOffset = ((0));
    }
 
-   this->mergedCommand.lastUpdate = 0;
+   this->mergedCommand.lastUpdate = ((0));
 }
 
 void Process_updateCPUFieldWidths(float percentage) {
-   if (!isgreaterequal(percentage, 99.9F)) {
-      Row_updateFieldWidth(PERCENT_CPU, 4);
-      Row_updateFieldWidth(PERCENT_NORM_CPU, 4);
+   if (!!(!isgreaterequal(percentage, 99.9F))) {
+      (Row_updateFieldWidth(PERCENT_CPU, 4));
+      (Row_updateFieldWidth(PERCENT_NORM_CPU, 4));
       return;
    }
 
    // Add additional two characters, one for "." and another for precision.
-   uint8_t width = ceil(log10(percentage + 0.1)) + 2;
+   uint8_t width = ((ceil(log10(percentage + 0.1)) + 2));
 
-   Row_updateFieldWidth(PERCENT_CPU, width);
-   Row_updateFieldWidth(PERCENT_NORM_CPU, width);
+   (Row_updateFieldWidth(PERCENT_CPU, width));
+   (Row_updateFieldWidth(PERCENT_NORM_CPU, width));
 }
 
 const ProcessClass Process_class = {

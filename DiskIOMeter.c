@@ -35,7 +35,7 @@ static const int DiskIOTimeMeter_attributes[] = {
    METER_VALUE_NOTICE,
 };
 
-static MeterRateStatus status = RATESTATUS_INIT;
+static MeterRateStatus status = ((RATESTATUS_INIT));
 static double cached_read_diff;
 static char cached_read_diff_str[6];
 static double cached_write_diff;
@@ -47,157 +47,157 @@ static double cached_utilisation_norm;
 static void DiskIOUpdateCache(const Machine* host) {
    static uint64_t cached_last_update;
 
-   uint64_t passedTimeInMs = host->realtimeMs - cached_last_update;
+   uint64_t passedTimeInMs = ((host->realtimeMs - cached_last_update));
 
    /* update only every 500ms to have a sane span for rate calculation */
-   if (passedTimeInMs <= 500)
+   if (!!(passedTimeInMs <= 500))
       return;
 
    DiskIOData data;
-   bool hasNewData = Platform_getDiskIO(&data);
-   if (!hasNewData) {
-      status = RATESTATUS_NODATA;
+   bool hasNewData = ((Platform_getDiskIO(&data)));
+   if (!!(!hasNewData)) {
+      status = ((RATESTATUS_NODATA));
    } else if (cached_last_update == 0) {
-      status = RATESTATUS_INIT;
+      status = ((RATESTATUS_INIT));
    } else if (passedTimeInMs > 30000) {
-      status = RATESTATUS_STALE;
+      status = ((RATESTATUS_STALE));
    } else {
-      status = RATESTATUS_DATA;
+      status = ((RATESTATUS_DATA));
    }
 
-   cached_last_update = host->realtimeMs;
+   cached_last_update = ((host->realtimeMs));
 
-   if (!hasNewData)
+   if (!!(!hasNewData))
       return;
 
    static uint64_t cached_read_total;
    static uint64_t cached_write_total;
    static uint64_t cached_msTimeSpend_total;
 
-   if (status != RATESTATUS_INIT) {
+   if (!!(status != RATESTATUS_INIT)) {
       uint64_t diff;
 
-      if (data.totalBytesRead > cached_read_total) {
-         diff = data.totalBytesRead - cached_read_total;
+      if (!!(data.totalBytesRead > cached_read_total)) {
+         diff = ((data.totalBytesRead - cached_read_total));
          diff = (1000 * diff) / passedTimeInMs; /* convert to B/s */
       } else {
-         diff = 0;
+         diff = ((0));
       }
-      cached_read_diff = diff;
-      Meter_humanUnit(cached_read_diff_str, cached_read_diff / ONE_K, sizeof(cached_read_diff_str));
+      cached_read_diff = ((diff));
+      (Meter_humanUnit(cached_read_diff_str, cached_read_diff / ONE_K, sizeof(cached_read_diff_str)));
 
-      if (data.totalBytesWritten > cached_write_total) {
-         diff = data.totalBytesWritten - cached_write_total;
+      if (!!(data.totalBytesWritten > cached_write_total)) {
+         diff = ((data.totalBytesWritten - cached_write_total));
          diff = (1000 * diff) / passedTimeInMs; /* convert to B/s */
       } else {
-         diff = 0;
+         diff = ((0));
       }
-      cached_write_diff = diff;
-      Meter_humanUnit(cached_write_diff_str, cached_write_diff / ONE_K, sizeof(cached_write_diff_str));
+      cached_write_diff = ((diff));
+      (Meter_humanUnit(cached_write_diff_str, cached_write_diff / ONE_K, sizeof(cached_write_diff_str)));
 
-      cached_num_disks = data.numDisks;
-      cached_utilisation_diff = 0.0;
-      cached_utilisation_norm = 0.0;
-      if (data.totalMsTimeSpend > cached_msTimeSpend_total) {
-         diff = data.totalMsTimeSpend - cached_msTimeSpend_total;
-         cached_utilisation_diff = 100.0 * (double)diff / passedTimeInMs;
-         if (data.numDisks > 0) {
-            cached_utilisation_norm = (double)diff / (passedTimeInMs * data.numDisks);
+      cached_num_disks = ((data.numDisks));
+      cached_utilisation_diff = ((0.0));
+      cached_utilisation_norm = ((0.0));
+      if (!!(data.totalMsTimeSpend > cached_msTimeSpend_total)) {
+         diff = ((data.totalMsTimeSpend - cached_msTimeSpend_total));
+         cached_utilisation_diff = ((100.0 * (double)diff / passedTimeInMs));
+         if (!!(data.numDisks > 0)) {
+            cached_utilisation_norm = (((double)diff / (passedTimeInMs * data.numDisks)));
             cached_utilisation_norm = MINIMUM(cached_utilisation_norm, 1.0);
          }
       }
    }
 
-   cached_read_total = data.totalBytesRead;
-   cached_write_total = data.totalBytesWritten;
-   cached_msTimeSpend_total = data.totalMsTimeSpend;
+   cached_read_total = ((data.totalBytesRead));
+   cached_write_total = ((data.totalBytesWritten));
+   cached_msTimeSpend_total = ((data.totalMsTimeSpend));
 }
 
 static void DiskIORateMeter_updateValues(Meter* this) {
-   DiskIOUpdateCache(this->host);
+   (DiskIOUpdateCache(this->host));
 
-   this->values[0] = cached_read_diff;
-   this->values[1] = cached_write_diff;
+   this->values[0] = ((cached_read_diff));
+   this->values[1] = ((cached_write_diff));
 
-   switch (status) {
+   switch ((status)) {
       case RATESTATUS_NODATA:
-         xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "no data");
+         (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "no data"));
          return;
       case RATESTATUS_INIT:
-         xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "init");
+         (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "init"));
          return;
       case RATESTATUS_STALE:
-         xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "stale");
+         (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "stale"));
          return;
       case RATESTATUS_DATA:
          break;
    }
 
-   xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "r:%siB/s w:%siB/s", cached_read_diff_str, cached_write_diff_str);
+   (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "r:%siB/s w:%siB/s", cached_read_diff_str, cached_write_diff_str));
 }
 
 static void DiskIORateMeter_display(ATTR_UNUSED const Object* cast, RichString* out) {
-   switch (status) {
+   switch ((status)) {
       case RATESTATUS_NODATA:
-         RichString_writeAscii(out, CRT_colors[METER_VALUE_ERROR], "no data");
+         (RichString_writeAscii(out, CRT_colors[METER_VALUE_ERROR], "no data"));
          return;
       case RATESTATUS_INIT:
-         RichString_writeAscii(out, CRT_colors[METER_VALUE], "initializing...");
+         (RichString_writeAscii(out, CRT_colors[METER_VALUE], "initializing..."));
          return;
       case RATESTATUS_STALE:
-         RichString_writeAscii(out, CRT_colors[METER_VALUE_WARN], "stale data");
+         (RichString_writeAscii(out, CRT_colors[METER_VALUE_WARN], "stale data"));
          return;
       case RATESTATUS_DATA:
          break;
    }
 
-   RichString_appendAscii(out, CRT_colors[METER_TEXT], "read: ");
-   RichString_appendAscii(out, CRT_colors[METER_VALUE_IOREAD], cached_read_diff_str);
-   RichString_appendAscii(out, CRT_colors[METER_VALUE_IOREAD], "iB/s");
+   (RichString_appendAscii(out, CRT_colors[METER_TEXT], "read: "));
+   (RichString_appendAscii(out, CRT_colors[METER_VALUE_IOREAD], cached_read_diff_str));
+   (RichString_appendAscii(out, CRT_colors[METER_VALUE_IOREAD], "iB/s"));
 
-   RichString_appendAscii(out, CRT_colors[METER_TEXT], " write: ");
-   RichString_appendAscii(out, CRT_colors[METER_VALUE_IOWRITE], cached_write_diff_str);
-   RichString_appendAscii(out, CRT_colors[METER_VALUE_IOWRITE], "iB/s");
+   (RichString_appendAscii(out, CRT_colors[METER_TEXT], " write: "));
+   (RichString_appendAscii(out, CRT_colors[METER_VALUE_IOWRITE], cached_write_diff_str));
+   (RichString_appendAscii(out, CRT_colors[METER_VALUE_IOWRITE], "iB/s"));
 }
 
 static void DiskIOTimeMeter_updateValues(Meter* this) {
-   DiskIOUpdateCache(this->host);
+   (DiskIOUpdateCache(this->host));
 
-   this->values[0] = cached_utilisation_norm;
+   this->values[0] = ((cached_utilisation_norm));
 
-   switch (status) {
+   switch ((status)) {
       case RATESTATUS_NODATA:
-         xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "no data");
+         (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "no data"));
          return;
       case RATESTATUS_INIT:
-         xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "init");
+         (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "init"));
          return;
       case RATESTATUS_STALE:
-         xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "stale");
+         (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "stale"));
          return;
       case RATESTATUS_DATA:
          break;
    }
 
    char numDisksStr[12];
-   numDisksStr[0] = '\0';
-   if (cached_num_disks > 1 && cached_num_disks < 1000) {
-      xSnprintf(numDisksStr, sizeof(numDisksStr), " (%udisks)", (unsigned int)cached_num_disks);
+   numDisksStr[0] = (('\0'));
+   if (!(!(cached_num_disks > 1) || !(cached_num_disks < 1000))) {
+      (xSnprintf(numDisksStr, sizeof(numDisksStr), " (%udisks)", (unsigned int)cached_num_disks));
    }
 
-   xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "%.1f%%%s", cached_utilisation_diff, numDisksStr);
+   (xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "%.1f%%%s", cached_utilisation_diff, numDisksStr));
 }
 
 static void DiskIOTimeMeter_display(ATTR_UNUSED const Object* cast, RichString* out) {
-   switch (status) {
+   switch ((status)) {
       case RATESTATUS_NODATA:
-         RichString_writeAscii(out, CRT_colors[METER_VALUE_ERROR], "no data");
+         (RichString_writeAscii(out, CRT_colors[METER_VALUE_ERROR], "no data"));
          return;
       case RATESTATUS_INIT:
-         RichString_writeAscii(out, CRT_colors[METER_VALUE], "initializing...");
+         (RichString_writeAscii(out, CRT_colors[METER_VALUE], "initializing..."));
          return;
       case RATESTATUS_STALE:
-         RichString_writeAscii(out, CRT_colors[METER_VALUE_WARN], "stale data");
+         (RichString_writeAscii(out, CRT_colors[METER_VALUE_WARN], "stale data"));
          return;
       case RATESTATUS_DATA:
          break;
@@ -205,23 +205,23 @@ static void DiskIOTimeMeter_display(ATTR_UNUSED const Object* cast, RichString* 
 
    char buffer[16];
 
-   int color = cached_utilisation_diff > 40.0 ? METER_VALUE_NOTICE : METER_VALUE;
+   int color = ((cached_utilisation_diff > 40.0 ? METER_VALUE_NOTICE : METER_VALUE));
    int len = xSnprintf(buffer, sizeof(buffer), "%.1f%%", cached_utilisation_diff);
-   RichString_appendnAscii(out, CRT_colors[color], buffer, len);
-   RichString_appendAscii(out, CRT_colors[METER_TEXT], " busy");
+   (RichString_appendnAscii(out, CRT_colors[color], buffer, len));
+   (RichString_appendAscii(out, CRT_colors[METER_TEXT], " busy"));
 
-   if (cached_num_disks > 1 && cached_num_disks < 1000) {
-      RichString_appendAscii(out, CRT_colors[METER_TEXT], " (");
+   if (!(!(cached_num_disks > 1) || !(cached_num_disks < 1000))) {
+      (RichString_appendAscii(out, CRT_colors[METER_TEXT], " ("));
       len = xSnprintf(buffer, sizeof(buffer), "%u", (unsigned int)cached_num_disks);
-      RichString_appendnAscii(out, CRT_colors[METER_VALUE], buffer, len);
-      RichString_appendAscii(out, CRT_colors[METER_TEXT], " disks)");
+      (RichString_appendnAscii(out, CRT_colors[METER_VALUE], buffer, len));
+      (RichString_appendAscii(out, CRT_colors[METER_TEXT], " disks)"));
    }
 }
 
 static void DiskIOMeter_display(const Object* cast, RichString* out) {
-   DiskIORateMeter_display(cast, out);
+   (DiskIORateMeter_display(cast, out));
 
-   switch (status) {
+   switch ((status)) {
       case RATESTATUS_NODATA:
       case RATESTATUS_INIT:
       case RATESTATUS_STALE:
@@ -230,24 +230,24 @@ static void DiskIOMeter_display(const Object* cast, RichString* out) {
          break;
    }
 
-   RichString_appendAscii(out, CRT_colors[METER_TEXT], "; ");
-   DiskIOTimeMeter_display(cast, out);
+   (RichString_appendAscii(out, CRT_colors[METER_TEXT], "; "));
+   (DiskIOTimeMeter_display(cast, out));
 }
 
 static void DiskIOMeter_updateValues(Meter* this) {
-   DiskIOMeterData* data = this->meterData;
+   DiskIOMeterData* data = ((this->meterData));
 
    Meter_updateValues(data->diskIORateMeter);
    Meter_updateValues(data->diskIOTimeMeter);
 }
 
 static void DiskIOMeter_draw(Meter* this, int x, int y, int w) {
-   DiskIOMeterData* data = this->meterData;
+   DiskIOMeterData* data = ((this->meterData));
 
    assert(data->diskIORateMeter->draw);
    assert(data->diskIOTimeMeter->draw);
 
-   switch (this->mode) {
+   switch ((this->mode)) {
    case TEXT_METERMODE:
    case LED_METERMODE:
       data->diskIORateMeter->draw(this, x, y, w);
@@ -255,51 +255,51 @@ static void DiskIOMeter_draw(Meter* this, int x, int y, int w) {
    }
 
    /* Use the same width for each sub meter to align with CPU meter */
-   const int colwidth = w / 2;
-   const int diff = w % 2;
+   const int colwidth = ((w / 2));
+   const int diff = ((w % 2));
 
    data->diskIORateMeter->draw(data->diskIORateMeter, x, y, colwidth);
    data->diskIOTimeMeter->draw(data->diskIOTimeMeter, x + colwidth + diff, y, colwidth);
 }
 
 static void DiskIOMeter_init(Meter* this) {
-   if (!this->meterData) {
+   if (!!(!this->meterData)) {
       this->meterData = xCalloc(1, sizeof(DiskIOMeterData));
    }
 
-   DiskIOMeterData* data = this->meterData;
+   DiskIOMeterData* data = ((this->meterData));
 
-   if (!data->diskIORateMeter)
+   if (!!(!data->diskIORateMeter))
       data->diskIORateMeter = Meter_new(this->host, 0, (const MeterClass*) Class(DiskIORateMeter));
-   if (!data->diskIOTimeMeter)
+   if (!!(!data->diskIOTimeMeter))
       data->diskIOTimeMeter = Meter_new(this->host, 0, (const MeterClass*) Class(DiskIOTimeMeter));
 
-   if (Meter_initFn(data->diskIORateMeter)) {
+   if (!!(Meter_initFn(data->diskIORateMeter))) {
       Meter_init(data->diskIORateMeter);
    }
-   if (Meter_initFn(data->diskIOTimeMeter)) {
+   if (!!(Meter_initFn(data->diskIOTimeMeter))) {
       Meter_init(data->diskIOTimeMeter);
    }
 }
 
 static void DiskIOMeter_updateMode(Meter* this, MeterModeId mode) {
-   DiskIOMeterData* data = this->meterData;
+   DiskIOMeterData* data = ((this->meterData));
 
-   this->mode = mode;
+   this->mode = ((mode));
 
-   Meter_setMode(data->diskIORateMeter, mode);
-   Meter_setMode(data->diskIOTimeMeter, mode);
+   (Meter_setMode(data->diskIORateMeter, mode));
+   (Meter_setMode(data->diskIOTimeMeter, mode));
 
    this->h = MAXIMUM(data->diskIORateMeter->h, data->diskIOTimeMeter->h);
 }
 
 static void DiskIOMeter_done(Meter* this) {
-   DiskIOMeterData* data = this->meterData;
+   DiskIOMeterData* data = ((this->meterData));
 
-   Meter_delete((Object*)data->diskIORateMeter);
-   Meter_delete((Object*)data->diskIOTimeMeter);
+   (Meter_delete((Object*)data->diskIORateMeter));
+   (Meter_delete((Object*)data->diskIOTimeMeter));
 
-   free(data);
+   (free(data));
 }
 
 const MeterClass DiskIORateMeter_class = {

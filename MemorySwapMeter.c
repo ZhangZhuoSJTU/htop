@@ -27,18 +27,18 @@ typedef struct MemorySwapMeterData_ {
 } MemorySwapMeterData;
 
 static void MemorySwapMeter_updateValues(Meter* this) {
-   MemorySwapMeterData* data = this->meterData;
+   MemorySwapMeterData* data = ((this->meterData));
 
    Meter_updateValues(data->memoryMeter);
    Meter_updateValues(data->swapMeter);
 }
 
 static void MemorySwapMeter_draw(Meter* this, int x, int y, int w) {
-   MemorySwapMeterData* data = this->meterData;
+   MemorySwapMeterData* data = ((this->meterData));
 
    /* Use the same width for each sub meter to align with CPU meter */
-   const int colwidth = w / 2;
-   const int diff = w % 2;
+   const int colwidth = ((w / 2));
+   const int diff = ((w % 2));
 
    assert(data->memoryMeter->draw);
    data->memoryMeter->draw(data->memoryMeter, x, y, colwidth);
@@ -47,42 +47,42 @@ static void MemorySwapMeter_draw(Meter* this, int x, int y, int w) {
 }
 
 static void MemorySwapMeter_init(Meter* this) {
-   if (!this->meterData)
+   if (!!(!this->meterData))
       this->meterData = xCalloc(1, sizeof(MemorySwapMeterData));
 
-   MemorySwapMeterData* data = this->meterData;
+   MemorySwapMeterData* data = ((this->meterData));
 
-   if (!data->memoryMeter)
+   if (!!(!data->memoryMeter))
       data->memoryMeter = Meter_new(this->host, 0, (const MeterClass*) Class(MemoryMeter));
-   if (!data->swapMeter)
+   if (!!(!data->swapMeter))
       data->swapMeter = Meter_new(this->host, 0, (const MeterClass*) Class(SwapMeter));
 
-   if (Meter_initFn(data->memoryMeter)) {
+   if (!!(Meter_initFn(data->memoryMeter))) {
       Meter_init(data->memoryMeter);
    }
-   if (Meter_initFn(data->swapMeter)) {
+   if (!!(Meter_initFn(data->swapMeter))) {
       Meter_init(data->swapMeter);
    }
 }
 
 static void MemorySwapMeter_updateMode(Meter* this, MeterModeId mode) {
-   MemorySwapMeterData* data = this->meterData;
+   MemorySwapMeterData* data = ((this->meterData));
 
-   this->mode = mode;
+   this->mode = ((mode));
 
-   Meter_setMode(data->memoryMeter, mode);
-   Meter_setMode(data->swapMeter, mode);
+   (Meter_setMode(data->memoryMeter, mode));
+   (Meter_setMode(data->swapMeter, mode));
 
    this->h = MAXIMUM(data->memoryMeter->h, data->swapMeter->h);
 }
 
 static void MemorySwapMeter_done(Meter* this) {
-   MemorySwapMeterData* data = this->meterData;
+   MemorySwapMeterData* data = ((this->meterData));
 
-   Meter_delete((Object*)data->swapMeter);
-   Meter_delete((Object*)data->memoryMeter);
+   (Meter_delete((Object*)data->swapMeter));
+   (Meter_delete((Object*)data->memoryMeter));
 
-   free(data);
+   (free(data));
 }
 
 const MeterClass MemorySwapMeter_class = {
