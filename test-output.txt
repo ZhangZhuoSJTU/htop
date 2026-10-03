@@ -1,0 +1,159 @@
+autoreconf: export WARNINGS=all
+autoreconf: Entering directory '.'
+autoreconf: configure.ac: not using Gettext
+autoreconf: running: aclocal --force 
+autoreconf: configure.ac: tracing
+autoreconf: configure.ac: not using Libtool
+autoreconf: configure.ac: not using Intltool
+autoreconf: configure.ac: not using Gtkdoc
+autoreconf: running: /usr/bin/autoconf --force
+autoreconf: running: /usr/bin/autoheader --force
+autoreconf: running: automake --add-missing --copy --force-missing
+autoreconf: Leaving directory '.'
+checking build system type... x86_64-pc-linux-gnu
+checking host system type... x86_64-pc-linux-gnu
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking for a race-free mkdir -p... /usr/bin/mkdir -p
+checking for gawk... gawk
+checking whether make sets $(MAKE)... yes
+checking whether make supports nested variables... yes
+checking whether make supports the include directive... yes (GNU style)
+checking for gcc... gcc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether the compiler supports GNU C... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to enable C11 features... none needed
+checking whether gcc understands -c and -o together... yes
+checking dependency style of gcc... gcc3
+checking for stdio.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for strings.h... yes
+checking for sys/stat.h... yes
+checking for sys/types.h... yes
+checking for unistd.h... yes
+checking for wchar.h... yes
+checking for minix/config.h... no
+checking whether it is safe to define __EXTENSIONS__... yes
+checking whether _XOPEN_SOURCE should be defined... no
+checking for special C compiler options needed for large files... no
+checking for _FILE_OFFSET_BITS value needed for large files... no
+checking for gcc... (cached) gcc
+checking whether the compiler supports GNU C... (cached) yes
+checking whether gcc accepts -g... (cached) yes
+checking for gcc option to enable C11 features... (cached) none needed
+checking whether gcc understands -c and -o together... (cached) yes
+checking dependency style of gcc... (cached) gcc3
+checking for dirent.h that defines DIR... yes
+checking for library containing opendir... none required
+checking for stdlib.h... (cached) yes
+checking for string.h... (cached) yes
+checking for strings.h... (cached) yes
+checking for sys/param.h... yes
+checking for sys/time.h... yes
+checking for sys/utsname.h... yes
+checking for unistd.h... (cached) yes
+checking for sys/mkdev.h... no
+checking for sys/sysmacros.h... yes
+checking for execinfo.h... yes
+checking for mbstate_t... yes
+checking for mode_t... yes
+checking for off_t... yes
+checking for pid_t... yes
+checking for size_t... yes
+checking for ssize_t... yes
+checking how to run the C preprocessor... gcc -E
+checking for grep that handles long lines and -e... /usr/bin/grep
+checking for egrep... /usr/bin/grep -E
+checking for uid_t in sys/types.h... yes
+checking for uint8_t... yes
+checking for uint16_t... yes
+checking for uint32_t... yes
+checking for uint64_t... yes
+checking for alloc_size... yes
+checking for access... yes
+checking for nonnull... yes
+checking for returns_nonnull... yes
+checking for NaN support... yes
+checking for __builtin_ctz... yes
+checking for library containing ceil... -lm
+checking for library containing dlopen... none required
+checking for library containing clock_gettime... none required
+checking for dladdr... yes
+checking for faccessat... yes
+checking for fstatat... yes
+checking for host_get_clock_service... no
+checking for memfd_create... yes
+checking for openat... yes
+checking for readlinkat... yes
+checking for sched_getscheduler... yes
+checking for sched_setscheduler... yes
+checking for strnlen... yes
+checking for strchrnul... yes
+checking for pkg-config... /usr/bin/pkg-config
+checking pkg-config is at least version 0.9.0... yes
+found ncursesw information through /usr/bin/pkg-config
+checking for keypad in -lncursesw -ltinfo ... yes
+checking for doupdate in -lncursesw -ltinfo ... yes
+checking for wadd_wchnstr in -lncursesw -ltinfo ... yes
+checking for ncursesw/curses.h... yes
+checking for ncursesw/term.h... yes
+checking whether the curses header works... yes
+checking for set_escdelay... yes
+checking for getmouse... yes
+checking for usable sched_setaffinity... yes
+checking for libunwind... no
+checking the include directory of libunwind.h... (not found)
+checking for library containing backtrace... none required
+checking the return type of backtrace... automatic (using __typeof__)
+checking for cap_init in -lcap... no
+checking for sys/capability.h... no
+checking for libnl-3.0... no
+checking for netlink/attr.h... no
+checking for netlink/handlers.h... no
+checking for netlink/msg.h... no
+checking for sensors/sensors.h... no
+checking whether the C compiler accepts -Wextra-semi-stmt... no
+checking whether the C compiler accepts -Wimplicit-int-conversion... no
+checking whether the C compiler accepts -Wnull-dereference... yes
+checking that generated files are newer than configure... done
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating htop.1
+config.status: creating config.h
+config.status: config.h is unchanged
+config.status: executing depfiles commands
+
+  htop 3.5.0-dev-3.4.1-328-ga1d6ad9-dirty
+
+  platform:                  linux (linux-gnu)
+  (Linux) proc directory:    /proc
+  (Linux) openvz:            no
+  (Linux) vserver:           no
+  (Linux) ancient vserver:   no
+  (Linux) delay accounting:  no
+  (Linux) sensors:           no
+  (Linux) capabilities:      no
+  unicode:                   yes
+  affinity:                  yes
+  unwind:                    no
+  hwloc:                     no
+  debug:                     no
+  static:                    no
+
+make  all-am
+make[1]: Entering directory '/mnt/c/Users/jerry/OneDrive/Desktop/Documents/College/YR3 SEM1/Security/htop'
+make[1]: Leaving directory '/mnt/c/Users/jerry/OneDrive/Desktop/Documents/College/YR3 SEM1/Security/htop'
+=== branch 08291a021ea9 ===
+=== branch 32e3f2bdc5b7 ===
+08291a021ea9: 371/372 passed (420 ignored)
+32e3f2bdc5b7: 238/239 passed (169 ignored)
+
+TOTAL: 609/611 passed (99.7%), 589 tests ignored

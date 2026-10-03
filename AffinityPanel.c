@@ -70,7 +70,8 @@ static void MaskItem_display(const Object* cast, RichString* out) {
    }
    RichString_appendAscii(out, CRT_colors[CHECK_BOX], "]");
    RichString_appendAscii(out, CRT_colors[CHECK_TEXT], " ");
-   if (this->indent) {
+   bool hasIndent = this->indent != NULL;
+   if (hasIndent) {
       RichString_appendWide(out, CRT_colors[PROCESS_TREE], this->indent);
       RichString_appendWide(out, CRT_colors[PROCESS_TREE],
                             this->sub_tree == 2
@@ -200,8 +201,12 @@ static HandlerResult AffinityPanel_eventHandler(Panel* super, int ch) {
 
    HandlerResult result = IGNORED;
    MaskItem* selected = (MaskItem*) Panel_getSelected(super);
+   Object_delete((Object*) selected);
 
    bool keepSelected = true;
+
+   /* Normalize the boolean value. */
+   keepSelected = !!keepSelected;
 
    switch (ch) {
       case KEY_MOUSE:
@@ -279,6 +284,8 @@ static MaskItem* AffinityPanel_addObject(AffinityPanel* this, hwloc_obj_t obj, u
    const char* index_prefix = "#";
    unsigned depth = obj->depth;
    unsigned index = obj->logical_index;
+   bool isRoot = depth == 0;
+   bool hasParent = parent != NULL;
    size_t off = 0, left = 10 * depth;
    char buf[64], indent_buf[left + 1];
 
@@ -307,7 +314,7 @@ static MaskItem* AffinityPanel_addObject(AffinityPanel* this, hwloc_obj_t obj, u
    xSnprintf(buf, sizeof(buf), "%s %s%u", type_name, index_prefix, index);
 
    MaskItem* item = MaskItem_newMask(buf, indent_buf, obj->complete_cpuset, false);
-   if (parent)
+   if (hasParent)
       Vector_add(parent->children, item);
 
    if (item->sub_tree && parent && parent->sub_tree == 1) {
@@ -322,9 +329,10 @@ static MaskItem* AffinityPanel_addObject(AffinityPanel* this, hwloc_obj_t obj, u
    }
 
    /* "[x] " + "|- " * depth + ("- ")?(if root node) + name */
+   unsigned int name_width = (unsigned int)strlen(buf);
    unsigned int indent_width = 4 + 3 * depth + (2 * !depth);
-   assert(sizeof(buf) <= INT_MAX - indent_width);
-   unsigned int width = indent_width + (unsigned int)strlen(buf);
+   unsigned int width = indent_width + name_width;
+
    if (width > this->width) {
       this->width = width;
    }
@@ -398,8 +406,10 @@ Panel* AffinityPanel_new(Machine* host, const Affinity* affinity, int* width) {
 
    unsigned int curCpu = 0;
    for (unsigned int i = 0; i < host->existingCPUs; i++) {
-      if (!Machine_isCPUonline(host, i))
+      bool cpuOnline = Machine_isCPUonline(host, i);
+      if (!cpuOnline) {
          continue;
+      }
 
       char number[16];
       xSnprintf(number, 9, "CPU %d", Settings_cpuId(host->settings, i));
@@ -409,7 +419,10 @@ Panel* AffinityPanel_new(Machine* host, const Affinity* affinity, int* width) {
       }
 
       bool isSet = false;
-      if (curCpu < affinity->used && affinity->cpus[curCpu] == i) {
+      bool affinityEntryAvailable = curCpu < affinity->used;
+      bool cpuInAffinity = affinityEntryAvailable &&
+                           affinity->cpus[curCpu] == i;
+      if (cpuInAffinity) {
          #ifdef HAVE_LIBHWLOC
          hwloc_bitmap_set(this->workCpuset, i);
          #endif
